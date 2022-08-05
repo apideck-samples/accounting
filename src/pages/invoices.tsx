@@ -3,7 +3,7 @@ import { useInvoices, withSession } from 'utils'
 import Layout from 'components/Layout'
 import { NextPage } from 'next'
 
-const IndexPage: NextPage = () => {
+const InvoicesPage: NextPage = () => {
   const { invoices } = useInvoices()
 
   console.log('invoices', invoices)
@@ -12,11 +12,11 @@ const IndexPage: NextPage = () => {
     <Layout title="Invoices">
       <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center truncate">
         {invoices?.map((invoice) => {
-          return <p>{invoice.id}</p>
+          return <p key={invoice.id}>{invoice.id}</p>
         })}
       </div>
     </Layout>
   )
 }
 
-export default withSession(IndexPage)
+export default withSession(InvoicesPage)
