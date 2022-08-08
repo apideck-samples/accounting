@@ -13,7 +13,6 @@ export const useCustomers = () => {
   const { session } = useSession()
   const serviceId = connection?.service_id || ''
   const prevServiceId = usePrevious(serviceId)
-  const prevCursor = usePrevious(cursor)
   const { mutate } = useSWRConfig()
 
   const hasNewCursor = cursor && (!prevServiceId || prevServiceId === serviceId)
@@ -41,7 +40,7 @@ export const useCustomers = () => {
     return response.json()
   }
 
-  const createInvoice = async (invoice: Invoice) => {
+  const createCustomer = async (invoice: Invoice) => {
     const invoices = [...data, invoice]
     const options = { optimisticData: invoices, rollbackOnError: true }
     mutate(getCustomersUrl, addCustomer(invoice), options)
@@ -55,26 +54,13 @@ export const useCustomers = () => {
     }
   }
 
-  const prevPage = () => {
-    const prevCursor = data?.meta?.cursors?.previous
-    setCursor(prevCursor)
-  }
-
-  useEffect(() => {
-    if (prevCursor && prevCursor !== cursor) {
-      // revalidate()
-    }
-  }, [cursor, prevCursor])
-
   return {
     customers: data?.data,
     isLoading: !error && !data,
     isError: data?.error || error,
     hasNextPage: data?.meta?.cursors?.next,
     currentPage: data?.meta?.cursors?.current,
-    hasPrevPage: data?.meta?.cursors?.previous,
     nextPage,
-    prevPage,
-    createInvoice
+    createCustomer
   }
 }

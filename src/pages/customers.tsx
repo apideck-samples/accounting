@@ -10,7 +10,10 @@ const CustomersPage: NextPage = () => {
 
   return (
     <Layout title="Customers">
-      <PageHeading title="Customers" description={`Customer data from different connectors`} />
+      <PageHeading
+        title="Customers"
+        description={`Customer data from different Accounting connectors`}
+      />
       {connection && <Customers />}
     </Layout>
   )

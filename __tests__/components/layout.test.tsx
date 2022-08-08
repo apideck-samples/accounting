@@ -12,6 +12,17 @@ jest.mock('next/head', () => {
   }
 })
 
+jest.mock('next/router', () => ({
+  useRouter: jest.fn().mockReturnValue({
+    route: '/',
+    pathname: '/',
+    query: '',
+    asPath: '/',
+    prefetch: () => null,
+    push: () => null
+  })
+}))
+
 describe('Layout Component', () => {
   it('matches the snapshot', async () => {
     render(

@@ -1,7 +1,6 @@
 import { AccountingCustomer } from '@apideck/node'
 import CustomerCard from './CustomerCard'
-import PageLoader from 'components/PageLoader'
-import { Suspense } from 'react'
+import Spinner from 'components/Spinner'
 import { Waypoint } from 'react-waypoint'
 import { useCustomers } from 'utils'
 
@@ -11,14 +10,19 @@ const Customers = () => {
   const showWaypoint = customers?.length && !isLoading && hasNextPage
 
   return (
-    <Suspense fallback={<PageLoader />}>
+    <>
       <ul role="list" className="py-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {customers?.map((customer: AccountingCustomer) => (
           <CustomerCard key={customer.id} customer={customer} />
         ))}
       </ul>
+      {isLoading && (
+        <div className="flex items-center justify-center h-64 p-4 text-center">
+          <Spinner />
+        </div>
+      )}
       {showWaypoint && <Waypoint onEnter={nextPage} />}
-    </Suspense>
+    </>
   )
 }
 export default Customers
