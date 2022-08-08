@@ -1,0 +1,19 @@
+@import './tailwind.css';
+
+.custom-scrollbar-dark::-webkit-scrollbar {
+  @apply w-1.5;
+}
+
+.custom-scrollbar-dark::-webkit-scrollbar-track {
+  @apply bg-ui-400 rounded-tr-md rounded-br-md;
+}
+
+/* Handle */
+.custom-scrollbar-dark::-webkit-scrollbar-thumb {
+  @apply bg-ui-500 rounded-sm;
+}
+
+/* Handle on hover */
+.custom-scrollbar-dark:::-webkit-scrollbar-thumb:hover {
+  @apply bg-ui-600;
+}

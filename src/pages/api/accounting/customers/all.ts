@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 
-import { GetInvoicesResponse } from '@apideck/node'
+import { GetCustomersResponse } from '@apideck/node'
 import { init } from '../../_utils'
 
 interface Params {
@@ -14,7 +14,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const apideck = init(jwt as string)
 
   try {
-    const response: GetInvoicesResponse = await apideck.accounting.invoicesAll({
+    const response: GetCustomersResponse = await apideck.accounting.customersAll({
       limit: 20,
       serviceId,
       cursor

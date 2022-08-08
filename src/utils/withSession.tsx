@@ -3,7 +3,6 @@ import { ComponentType, useEffect, useState } from 'react'
 import Layout from 'components/Layout'
 import PageHeading from 'components/PageHeading'
 import PageLoader from 'components/PageLoader'
-import { Session } from 'types/Session'
 import { useRouter } from 'next/router'
 import { useSession } from './useSession'
 
@@ -44,12 +43,8 @@ export interface WithPageSessionRequiredProps {
   [key: string]: any
 }
 
-export interface SessionProps {
-  session: Session | boolean
-}
-
 export type WithPageSessionRequired = <P extends WithPageSessionRequiredProps>(
-  Component: ComponentType<P & SessionProps>,
+  Component: ComponentType<P>,
   options?: WithPageSessionRequiredOptions
 ) => React.FC<P>
 
@@ -75,24 +70,24 @@ export const withSession: WithPageSessionRequired = (Component, options = {}) =>
     } = options
     const { push } = useRouter()
 
-    const { session, isLoading } = useSession()
+    const { token, isLoading } = useSession()
 
     useEffect(() => setMounted(true), [])
 
     useEffect(() => {
-      if (session || isLoading) return
+      if (token || isLoading) return
 
       push(returnTo)
-    }, [isLoading, push, returnTo, session])
+    }, [isLoading, push, returnTo, token])
 
-    if (!mounted) return <Component session={false} {...props} />
+    if (!mounted) return <Component {...props} />
     if (isLoading) return onLoading()
 
     const error = false
     if (error) return onError(error)
 
-    if (session) {
-      return <Component session={session} {...props} />
+    if (token) {
+      return <Component {...props} />
     }
 
     return onRedirecting()

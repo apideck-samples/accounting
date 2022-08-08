@@ -1,4 +1,4 @@
-import 'styles/tailwind.css'
+import 'styles/main.css'
 
 import { ConnectionsProvider, SessionProvider } from 'utils'
 import { ModalProvider, ToastProvider } from '@apideck/components'

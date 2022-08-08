@@ -3,30 +3,18 @@ import { Menu, Transition } from '@headlessui/react'
 import { Connection } from '@apideck/node'
 import Spinner from './Spinner'
 import { Vault } from '@apideck/react-vault'
-import { useConnection } from 'utils'
-import useSWR from 'swr'
+import { useConnections } from 'utils/useConnections'
 import { useSession } from 'utils/useSession'
 import { useState } from 'react'
 
 const SelectConnection = () => {
-  const { setConnection, connection } = useConnection()
-  const { session } = useSession()
+  const { setConnectionId, connection, connections, isLoading } = useConnections()
+  const { token } = useSession()
   const [serviceId, setServiceId] = useState<string | null>(null)
-
-  const getConnections = async (url: string) => {
-    const response = await fetch(url)
-    return await response.json()
-  }
-
-  const { data: connections, error } = useSWR(
-    session?.jwt ? `/api/vault/connections?jwt=${session?.jwt}` : null,
-    getConnections
-  )
-  const isLoading = session && !connections && !error
 
   const selectConnection = async (connection: Connection) => {
     if (connection.state === 'callable') {
-      setConnection(connection)
+      setConnectionId(connection.id)
     } else {
       setServiceId(connection.service_id as string)
     }
@@ -46,9 +34,11 @@ const SelectConnection = () => {
             <Menu.Button className="bg-ui-600 text-white w-full flex items-center justify-between px-4 py-2 text-sm font-medium border rounded-md shadow-sm border-ui-500 group hover:bg-ui-500 focus:outline-none">
               <div className="flex items-center">
                 {!isLoading && connection?.icon && (
-                  <div className="w-6 h-6 mr-2">
+                  <div className="w-6 h-6 -ml-0.5 mr-2.5">
                     <img
-                      className={`rounded-full ${isLoading ? 'animate-spin opacity-20' : ''}`}
+                      className={`rounded-full ring-2 ring-ui-400 ${
+                        isLoading ? 'animate-spin opacity-20' : ''
+                      }`}
                       src={!isLoading && connection?.icon ? connection?.icon : '/img/logo.png'}
                       alt={connection.name}
                       height={28}
@@ -79,24 +69,24 @@ const SelectConnection = () => {
             >
               <Menu.Items
                 static
-                className="absolute right-0 z-10 w-full mt-2 origin-top-right bg-white border divide-y rounded-md outline-none border-cool-gray-200 divide-cool-gray-100"
+                className="absolute custom-scrollbar-dark right-0 z-10 w-full mt-2 origin-top-right backdrop-blur-md bg-ui-500/40 border divide-y rounded-md outline-none border-ui-500 divide-ui-500"
               >
                 <div className="py-1">
-                  {connections?.data?.map((connection: Connection, i: number) => {
+                  {connections?.map((connection: Connection, i: number) => {
                     return (
                       <Menu.Item key={i}>
                         {({ active }: { active: boolean }) => (
                           <div
                             onClick={() => selectConnection(connection)}
                             className={`${
-                              active ? 'bg-gray-100 text-gray-900' : 'text-gray-600'
-                            } flex items-center justify-between min-w-0 mx-2 cursor-pointer rounded-md py-0.5 overflow-hidden ${
+                              active ? 'backdrop-blur-lg bg-ui-500/50 transition' : 'bg-none'
+                            } flex items-center justify-between min-w-0 px-2 cursor-pointer py-0.5 overflow-hidden ${
                               connection.enabled ? '' : 'opacity-60'
                             }`}
                           >
                             <div className="flex p-2">
                               <img
-                                className="rounded-sm"
+                                className="rounded-full ring-ui-400 ring-2"
                                 src={connection.icon}
                                 alt={connection.name}
                                 height={28}
@@ -104,13 +94,13 @@ const SelectConnection = () => {
                               />
                             </div>
                             <span className="flex-1 min-w-0">
-                              <span className="text-sm font-medium text-gray-900 truncate">
+                              <span className="text-sm ml-1 text-white truncate">
                                 {connection.name}
                               </span>
                             </span>
 
                             <span
-                              className={`inline-block w-2.5 h-2.5 mr-2 rounded-full ring-2 ring-white ${statusColor(
+                              className={`inline-block w-2.5 h-2.5 mr-2 rounded-full ${statusColor(
                                 connection
                               )}`}
                             ></span>
@@ -125,9 +115,9 @@ const SelectConnection = () => {
           </>
         )}
       </Menu>
-      {session?.jwt && serviceId && (
+      {token && serviceId && (
         <Vault
-          token={session.jwt}
+          token={token}
           open={true}
           showAttribution={false}
           serviceId={serviceId}

@@ -1,5 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react'
-import { Fragment, ReactNode, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useState } from 'react'
 import {
   HiMenu,
   HiOutlineBookOpen,
@@ -21,46 +21,38 @@ interface Props {
   children: ReactNode
 }
 
+const items = [
+  {
+    name: 'Dashboard',
+    href: '/',
+    icon: FiBarChart2
+  },
+  {
+    name: 'Invoices',
+    href: `/invoices`,
+    icon: HiOutlineDocumentSearch
+  },
+  {
+    name: 'Customers',
+    href: `/customers`,
+    icon: HiOutlineUserGroup
+  },
+  {
+    name: 'Payments',
+    href: `/payments`,
+    icon: HiOutlineCash
+  },
+  {
+    name: 'Documentation',
+    href: 'https://developers.apideck.com/apis/accounting/reference',
+    icon: HiOutlineBookOpen,
+    external: true
+  }
+]
+
 const SidebarLayout = ({ children }: Props) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { pathname } = useRouter()
-
-  const navigation = useMemo(() => {
-    const items = [
-      {
-        name: 'Dashboard',
-        href: '/',
-        icon: FiBarChart2,
-        current: pathname === '/'
-      },
-      {
-        name: 'Invoices',
-        href: `/invoices`,
-        icon: HiOutlineDocumentSearch,
-        current: pathname.startsWith('/invoices')
-      },
-      {
-        name: 'Customers',
-        href: `/customers`,
-        icon: HiOutlineUserGroup,
-        current: pathname.includes('/customers')
-      },
-      {
-        name: 'Payments',
-        href: `/payments`,
-        icon: HiOutlineCash,
-        current: pathname.startsWith('/payments')
-      },
-      {
-        name: 'Documentation',
-        href: 'https://developers.apideck.com/apis/accounting/reference',
-        icon: HiOutlineBookOpen,
-        current: false,
-        external: true
-      }
-    ]
-    return items
-  }, [pathname])
 
   return (
     <>
@@ -108,21 +100,21 @@ const SidebarLayout = ({ children }: Props) => {
                     </button>
                   </div>
                 </Transition.Child>
-                <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
+                <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto custom-scrollbar-dark">
                   <div className="flex-shrink-0 flex items-center px-4">
                     <img className="h-8 w-auto" src="/img/logo-white.svg" alt="Workflow" />
                   </div>
                   <div className="flex-shrink-0 flex border-b border-ui-600 px-3 py-4">
                     <SelectConnection />
                   </div>
-                  <nav className="mt-5 px-2 space-y-1" suppressHydrationWarning={true}>
-                    {navigation.map((item) => {
+                  <nav className="mt-5 px-2 space-y-1">
+                    {items.map((item) => {
                       return (
                         <Link key={item.name} href={item.href}>
                           <a
                             target={item.external ? '_blank' : '_self'}
                             className={classNames(
-                              item.current
+                              pathname === item.href
                                 ? 'bg-ui-600 text-white'
                                 : 'text-white hover:bg-ui-600 hover:bg-opacity-75',
                               'group flex items-center px-2 py-2 text-base font-medium rounded-md'
@@ -149,23 +141,23 @@ const SidebarLayout = ({ children }: Props) => {
         {/* Static sidebar for desktop */}
         <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
           <div className="flex-1 flex flex-col min-h-0 bg-ui-700">
-            <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+            <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto custom-scrollbar-dark">
               <div className="flex items-center flex-shrink-0 px-4">
                 <img className="h-6 w-auto" src="/img/logo-white.svg" alt="Apideck" />
               </div>
-              <span className="text-xs text-white px-4 pt-1">Accounting Sample</span>
+              <span className="text-xs text-white px-4 pt-1">Sample Starter Kit</span>
               <div className="flex-shrink-0 flex border-b border-ui-600 px-3 py-4">
                 <SelectConnection />
               </div>
-              <nav className="mt-5 flex-1 px-3 space-y-1" suppressHydrationWarning={true}>
-                {navigation.map((item) => {
+              <nav className="mt-5 flex-1 px-3 space-y-1">
+                {items.map((item) => {
                   return (
                     <Link key={item.name} href={item.href}>
                       <a
                         target={item.external ? '_blank' : '_self'}
                         className={classNames(
-                          item.current
-                            ? 'bg-ui-600 text-white border-primary-600'
+                          pathname === item.href
+                            ? 'bg-ui-600 text-white border-primary-500'
                             : 'text-white hover:bg-ui-500 border-transparent',
                           'group flex items-center justify-between px-3 py-2.5 text-sm rounded border-l-4 group'
                         )}
@@ -174,7 +166,9 @@ const SidebarLayout = ({ children }: Props) => {
                           {item.icon && (
                             <item.icon
                               className={classNames(
-                                item.current ? 'text-white' : 'text-ui-300 group-hover:text-ui-200',
+                                pathname === item.href
+                                  ? 'text-white'
+                                  : 'text-ui-300 group-hover:text-ui-200',
                                 'mr-3 flex-shrink-0 h-5 w-5'
                               )}
                               aria-hidden="true"
@@ -193,6 +187,7 @@ const SidebarLayout = ({ children }: Props) => {
             </div>
             <div className="flex-shrink-0 flex border-t border-ui-600 p-2 min-h-[69px]">
               {/* <AccountDropdown /> */}
+
               <ConsumerDropdown />
             </div>
           </div>

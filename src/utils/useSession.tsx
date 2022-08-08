@@ -1,10 +1,18 @@
 import { ConsumerMetadata, Session } from 'types/Session'
-import { Dispatch, ReactNode, SetStateAction, createContext, useContext, useState } from 'react'
+import {
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  createContext,
+  useContext,
+  useEffect,
+  useState
+} from 'react'
 
 import camelCaseKeys from 'camelcase-keys-deep'
 import { decode } from 'jsonwebtoken'
+import { useCookieState } from './useCookieState'
 import { useRouter } from 'next/router'
-import { useStickyState } from './useStickyState'
 import { useToast } from '@apideck/components'
 
 type CreateSessionOptions = { consumerId: string; consumerMetadata: ConsumerMetadata }
@@ -12,6 +20,9 @@ type CreateSessionOptions = { consumerId: string; consumerMetadata: ConsumerMeta
 interface ContextProps {
   createSession: (options: CreateSessionOptions) => Promise<void>
   setSession: Dispatch<SetStateAction<Session | null>>
+  setToken: Dispatch<SetStateAction<string | null>>
+  token: string | null
+  clearSession: () => void
   session: Session | null
   isLoading: boolean
 }
@@ -19,10 +30,29 @@ interface ContextProps {
 const SessionContext = createContext<Partial<ContextProps>>({})
 
 export const SessionProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useStickyState(null, 'session')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const { push } = useRouter()
   const { addToast } = useToast()
+  const [session, setSession] = useState<Session | null>(null)
+  const [token, setToken] = useCookieState('session', null, {
+    encode: {
+      maxAge: 60 * 10 // 10 mins
+    }
+  })
+
+  useEffect(() => {
+    if (token) {
+      const decoded: any = decode(token)
+      const session = camelCaseKeys(decoded) as Session
+
+      setSession({ ...session, jwt: token })
+    }
+  }, [token])
+
+  const clearSession = () => {
+    setSession(null)
+    setToken(null)
+  }
 
   // Creates a test session with a random consumerID
   const createSession = async ({ consumerId, consumerMetadata }: CreateSessionOptions) => {
@@ -51,11 +81,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const jwt = response.data.session_token
-      const decoded = decode(jwt)
 
-      if (decoded) {
-        const session = camelCaseKeys(decoded as any) as Session
-        setSession({ ...session, jwt })
+      if (jwt) {
+        setToken(jwt)
         addToast({
           title: 'Session created',
           description: 'You can now use the sample application',
@@ -75,7 +103,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <SessionContext.Provider value={{ createSession, session, setSession, isLoading }}>
+    <SessionContext.Provider
+      value={{ createSession, session, clearSession, token, setToken, isLoading }}
+    >
       {children}
     </SessionContext.Provider>
   )

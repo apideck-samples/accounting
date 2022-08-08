@@ -54,8 +54,6 @@ You should now be able to load and manage the invoices, customers, and more of t
 Runs `next dev` which starts the app in development mode.<br>
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-<img alt="Screenshot" src="./public/img/screenshot.jpg" />
-
 #### `yarn build`
 
 Runs `next build` which builds the application for production usage

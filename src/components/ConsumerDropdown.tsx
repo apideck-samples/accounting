@@ -2,7 +2,7 @@ import { Dropdown } from '@apideck/components'
 import { useSession } from 'utils'
 
 const ConsumerDropdown = () => {
-  const { session, setSession } = useSession()
+  const { session, clearSession } = useSession()
 
   return (
     <Dropdown
@@ -10,9 +10,7 @@ const ConsumerDropdown = () => {
       options={[
         {
           label: 'Quit session',
-          onClick: () => {
-            setSession(null)
-          }
+          onClick: clearSession
         }
       ]}
       buttonLabel={'Loading...'}
