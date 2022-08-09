@@ -1,7 +1,7 @@
 import { Button, TextInput } from '@apideck/components'
 
 import { NextPage } from 'next'
-import { useSession } from 'utils'
+import { useSession } from 'hooks'
 import { useState } from 'react'
 
 const InvalidSessionPage: NextPage = () => {

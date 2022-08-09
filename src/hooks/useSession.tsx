@@ -11,7 +11,7 @@ import {
 
 import camelCaseKeys from 'camelcase-keys-deep'
 import { decode } from 'jsonwebtoken'
-import { useCookieState } from './useCookieState'
+import { useCookieState } from 'hooks'
 import { useRouter } from 'next/router'
 import { useToast } from '@apideck/components'
 
@@ -34,7 +34,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const { push } = useRouter()
   const { addToast } = useToast()
   const [session, setSession] = useState<Session | null>(null)
-  const [token, setToken] = useCookieState('session', null, {
+  const [token, setToken] = useCookieState('token', null, {
     encode: {
       maxAge: 60 * 10 // 10 mins
     }
@@ -51,7 +51,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
 
   const clearSession = () => {
     setSession(null)
-    setToken(null)
+    setToken(false)
   }
 
   // Creates a test session with a random consumerID

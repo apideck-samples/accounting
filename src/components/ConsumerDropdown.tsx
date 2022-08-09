@@ -1,5 +1,5 @@
 import { Dropdown } from '@apideck/components'
-import { useSession } from 'utils'
+import { useSession } from 'hooks'
 
 const ConsumerDropdown = () => {
   const { session, clearSession } = useSession()

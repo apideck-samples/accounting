@@ -1,28 +1,26 @@
+import { useConnections, useSession } from 'hooks'
 import { useEffect, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 
 import { Invoice } from '@apideck/node'
-import { fetcher } from './fetcher'
-import { useConnections } from './useConnections'
+import { fetcher } from 'utils'
 import { usePrevious } from '@apideck/components'
-import { useSession } from './useSession'
 
-export const useInvoices = () => {
+export const useCustomers = () => {
   const [cursor, setCursor] = useState(null)
   const { connection } = useConnections()
   const { session } = useSession()
   const serviceId = connection?.service_id || ''
   const prevServiceId = usePrevious(serviceId)
-  const prevCursor = usePrevious(cursor)
   const { mutate } = useSWRConfig()
 
   const hasNewCursor = cursor && (!prevServiceId || prevServiceId === serviceId)
   const cursorParams = hasNewCursor ? `&cursor=${cursor}` : ''
-  const getInvoicesUrl = serviceId
-    ? `/api/accounting/invoices/all?jwt=${session?.jwt}&serviceId=${serviceId}${cursorParams}`
+  const getCustomersUrl = serviceId
+    ? `/api/accounting/customers/all?jwt=${session?.jwt}&serviceId=${serviceId}${cursorParams}`
     : null
 
-  const { data, error } = useSWR(getInvoicesUrl, fetcher)
+  const { data, error } = useSWR(getCustomersUrl, fetcher)
 
   useEffect(() => {
     if (prevServiceId && prevServiceId !== serviceId) {
@@ -30,9 +28,9 @@ export const useInvoices = () => {
     }
   }, [serviceId, prevServiceId])
 
-  const addInvoice = async (invoice: Invoice) => {
+  const addCustomer = async (invoice: Invoice) => {
     const response = await fetch(
-      `/api/accounting/invoices/add?jwt=${session?.jwt}&serviceId=${serviceId}`,
+      `/api/accounting/customers/add?jwt=${session?.jwt}&serviceId=${serviceId}`,
       {
         method: 'POST',
         body: JSON.stringify(invoice)
@@ -41,10 +39,10 @@ export const useInvoices = () => {
     return response.json()
   }
 
-  const createInvoice = async (invoice: Invoice) => {
+  const createCustomer = async (invoice: Invoice) => {
     const invoices = [...data, invoice]
     const options = { optimisticData: invoices, rollbackOnError: true }
-    mutate(getInvoicesUrl, addInvoice(invoice), options)
+    mutate(getCustomersUrl, addCustomer(invoice), options)
   }
 
   const nextPage = () => {
@@ -55,26 +53,13 @@ export const useInvoices = () => {
     }
   }
 
-  const prevPage = () => {
-    const prevCursor = data?.meta?.cursors?.previous
-    setCursor(prevCursor)
-  }
-
-  useEffect(() => {
-    if (prevCursor && prevCursor !== cursor) {
-      // revalidate()
-    }
-  }, [cursor, prevCursor])
-
   return {
-    invoices: data?.data,
+    customers: data?.data,
     isLoading: !error && !data,
     isError: data?.error || error,
     hasNextPage: data?.meta?.cursors?.next,
     currentPage: data?.meta?.cursors?.current,
-    hasPrevPage: data?.meta?.cursors?.previous,
     nextPage,
-    prevPage,
-    createInvoice
+    createCustomer
   }
 }

@@ -1,10 +1,9 @@
 import { Menu, Transition } from '@headlessui/react'
+import { useConnections, useSession } from 'hooks'
 
 import { Connection } from '@apideck/node'
 import Spinner from './Spinner'
 import { Vault } from '@apideck/react-vault'
-import { useConnections } from 'utils/useConnections'
-import { useSession } from 'utils/useSession'
 import { useState } from 'react'
 
 const SelectConnection = () => {

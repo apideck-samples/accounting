@@ -145,7 +145,7 @@ const SidebarLayout = ({ children }: Props) => {
               <div className="flex items-center flex-shrink-0 px-4">
                 <img className="h-6 w-auto" src="/img/logo-white.svg" alt="Apideck" />
               </div>
-              <span className="text-xs text-white px-4 pt-1">Sample Starter Kit</span>
+              <span className="text-xs text-white px-4 pt-1">Accounting Sample</span>
               <div className="flex-shrink-0 flex border-b border-ui-600 px-3 py-4">
                 <SelectConnection />
               </div>

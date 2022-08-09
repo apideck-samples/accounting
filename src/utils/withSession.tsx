@@ -4,7 +4,7 @@ import Layout from 'components/Layout'
 import PageHeading from 'components/PageHeading'
 import PageLoader from 'components/PageLoader'
 import { useRouter } from 'next/router'
-import { useSession } from './useSession'
+import { useSession } from 'hooks'
 
 const defaultOnLoading = (): JSX.Element => <PageLoader />
 const defaultOnError = (error: any): JSX.Element => (

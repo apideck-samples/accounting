@@ -1,6 +1,6 @@
 import 'styles/main.css'
 
-import { ConnectionsProvider, SessionProvider } from 'utils'
+import { ConnectionsProvider, SessionProvider } from 'hooks'
 import { ModalProvider, ToastProvider } from '@apideck/components'
 
 import { AppProps } from 'next/app'

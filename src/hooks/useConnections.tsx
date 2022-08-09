@@ -3,7 +3,7 @@ import { Dispatch, ReactNode, createContext, useContext } from 'react'
 import { Connection } from '@apideck/node'
 import { useCookieState } from './useCookieState'
 import useSWR from 'swr'
-import { useSession } from './useSession'
+import { useSession } from 'hooks'
 
 interface ContextProps {
   setConnectionId: Dispatch<string>

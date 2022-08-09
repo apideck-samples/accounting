@@ -2,7 +2,7 @@ import Customers from 'components/customers/Customers'
 import Layout from 'components/Layout'
 import { NextPage } from 'next'
 import PageHeading from 'components/PageHeading'
-import { useConnections } from 'utils/useConnections'
+import { useConnections } from 'hooks'
 import { withSession } from 'utils'
 
 const CustomersPage: NextPage = () => {
