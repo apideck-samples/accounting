@@ -56,11 +56,11 @@ export const useProfitAndLoss = () => {
     isError: data?.error || error,
     lastSixMonths: lastSixMonths
       ?.map(
-        (response) => response.data
-        // &&
-        // response.data.income &&
-        // response.data.income?.total < 1000229855 &&
-        // response.data
+        (response) =>
+          response.data &&
+          response.data.income &&
+          response.data.income?.total < 1000229855 &&
+          response.data
       )
       ?.filter(Boolean)
   }

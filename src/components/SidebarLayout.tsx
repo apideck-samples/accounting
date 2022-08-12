@@ -6,6 +6,7 @@ import {
   HiOutlineCash,
   HiOutlineDocumentSearch,
   HiOutlineExternalLink,
+  HiOutlinePresentationChartBar,
   HiOutlineUserGroup,
   HiX
 } from 'react-icons/hi'
@@ -26,6 +27,11 @@ const items = [
     name: 'Dashboard',
     href: '/',
     icon: FiBarChart2
+  },
+  {
+    name: 'Balance Sheet',
+    href: `/balance-sheet`,
+    icon: HiOutlinePresentationChartBar
   },
   {
     name: 'Invoices',

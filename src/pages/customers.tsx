@@ -1,4 +1,4 @@
-import Customers from 'components/customers/Customers'
+import Customers from 'components/Customers/Customers'
 import Layout from 'components/Layout'
 import { NextPage } from 'next'
 import PageHeading from 'components/PageHeading'
@@ -14,7 +14,9 @@ const CustomersPage: NextPage = () => {
         title="Customers"
         description={`Customer data from different Accounting connectors`}
       />
-      {connection && <Customers />}
+      <div className="py-6 space-y-6 xl:space-y-8 mt-3 border-t border-gray-200">
+        {connection && <Customers />}
+      </div>
     </Layout>
   )
 }

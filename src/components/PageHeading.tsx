@@ -7,7 +7,7 @@ interface Props {
 
 const PageHeading = ({ title, description }: Props) => {
   return (
-    <div className="md:flex md:items-center md:justify-between xl:py-2">
+    <div className="md:flex md:items-center md:justify-between xl:py-2 lg:pt-5">
       <div className="flex-1 min-w-0">
         <h1
           className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate"
