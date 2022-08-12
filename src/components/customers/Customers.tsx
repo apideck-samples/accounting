@@ -1,13 +1,10 @@
 import { AccountingCustomer } from '@apideck/node'
 import CustomerCard from './CustomerCard'
 import Spinner from 'components/Spinner'
-import { Waypoint } from 'react-waypoint'
 import { useCustomers } from 'hooks'
 
 const Customers = () => {
-  const { customers, isLoading, hasNextPage, nextPage } = useCustomers()
-
-  const showWaypoint = customers?.length > 0 && !isLoading && hasNextPage
+  const { customers, isLoading } = useCustomers()
 
   return (
     <>
@@ -21,7 +18,6 @@ const Customers = () => {
           <Spinner />
         </div>
       )}
-      {showWaypoint && <Waypoint onEnter={nextPage} />}
     </>
   )
 }

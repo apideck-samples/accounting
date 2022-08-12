@@ -12,7 +12,6 @@ export const useInvoices = () => {
   const { session } = useSession()
   const serviceId = connection?.service_id || ''
   const prevServiceId = usePrevious(serviceId)
-  const prevCursor = usePrevious(cursor)
   const { mutate } = useSWRConfig()
 
   const hasNewCursor = cursor && (!prevServiceId || prevServiceId === serviceId)
@@ -58,12 +57,6 @@ export const useInvoices = () => {
     const prevCursor = data?.meta?.cursors?.previous
     setCursor(prevCursor)
   }
-
-  useEffect(() => {
-    if (prevCursor && prevCursor !== cursor) {
-      // revalidate()
-    }
-  }, [cursor, prevCursor])
 
   return {
     invoices: data?.data,

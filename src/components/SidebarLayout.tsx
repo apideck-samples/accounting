@@ -3,7 +3,6 @@ import { Fragment, ReactNode, useState } from 'react'
 import {
   HiMenu,
   HiOutlineBookOpen,
-  HiOutlineCash,
   HiOutlineDocumentSearch,
   HiOutlineExternalLink,
   HiOutlinePresentationChartBar,
@@ -24,7 +23,7 @@ interface Props {
 
 const items = [
   {
-    name: 'Dashboard',
+    name: 'Profit & Loss',
     href: '/',
     icon: FiBarChart2
   },
@@ -43,11 +42,11 @@ const items = [
     href: `/customers`,
     icon: HiOutlineUserGroup
   },
-  {
-    name: 'Payments',
-    href: `/payments`,
-    icon: HiOutlineCash
-  },
+  // {
+  //   name: 'Payments',
+  //   href: `/payments`,
+  //   icon: HiOutlineCash
+  // },
   {
     name: 'Documentation',
     href: 'https://developers.apideck.com/apis/accounting/reference',

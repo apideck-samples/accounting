@@ -1,18 +1,19 @@
 import ChartWrapper from 'components/ChartWrapper'
+import type { ProfitAndLoss as ProfitAdnLossInterface } from '@apideck/node'
 import { ProfitAndLossRecord } from '@apideck/node'
 import dynamic from 'next/dynamic'
 import { useMemo } from 'react'
-import { useProfitAndLoss } from 'hooks'
+
 const Chart = dynamic(() => import('react-charts').then((module) => module.Chart), { ssr: false })
 
 interface Props {
+  profitAndLoss: ProfitAdnLossInterface
   type?: 'income' | 'expenses'
 }
 
-const ProfitAndLoss = ({ type = 'income' }: Props) => {
-  const { profitAndLoss } = useProfitAndLoss()
-
+const ProfitAndLoss = ({ profitAndLoss, type = 'income' }: Props) => {
   const data = useMemo(() => {
+    if (!profitAndLoss) return []
     return [
       {
         label: type,
@@ -39,7 +40,7 @@ const ProfitAndLoss = ({ type = 'income' }: Props) => {
   return (
     <ChartWrapper
       title={type}
-      subTitle={`From ${profitAndLoss?.start_date} to ${profitAndLoss.end_date}`}
+      subTitle={`From ${profitAndLoss?.start_date} to ${profitAndLoss?.end_date}`}
     >
       {profitAndLoss && (
         <Chart

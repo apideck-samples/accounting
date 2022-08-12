@@ -1,15 +1,16 @@
-import { Chip } from '@apideck/components'
+import { Button, Chip } from '@apideck/components'
+
 import { HiOutlineDocumentSearch } from 'react-icons/hi'
 import InvoicesTableLoadingRow from './InvoicesTableLoadingRow'
-import { Waypoint } from 'react-waypoint'
 import { useInvoices } from 'hooks'
 
 const InvoicesTable = () => {
-  const { invoices, isLoading, hasNextPage } = useInvoices()
+  const { invoices, isLoading, hasNextPage, hasPrevPage, nextPage, prevPage } = useInvoices()
 
   return (
     <div className="sm:px-4 md:px-0">
       <div className="-mx-4 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:-mx-6 md:mx-0 sm:rounded-lg fade-up">
+        {/* Invoice Table */}
         <table className="min-w-full divide-y divide-gray-300">
           <thead className="bg-gray-100">
             <tr>
@@ -45,36 +46,6 @@ const InvoicesTable = () => {
                   <span className="whitespace-nowrap">Status</span>
                 </th>
               )}
-              <th
-                scope="col"
-                className="relative py-3.5 pl-3 pr-4 sm:pr-6 text-sm font-medium text-gray-900"
-              >
-                {isLoading && (
-                  <span className="w-full flex justify-end">
-                    <svg
-                      data-testid="spinner"
-                      className="animate-spin h-4 w-4 text-ui-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                  </span>
-                )}
-              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
@@ -141,12 +112,13 @@ const InvoicesTable = () => {
               )
             })}
             {isLoading &&
-              [...new Array(15).keys()]?.map((i: number) => {
+              [...new Array(10).keys()]?.map((i: number) => {
                 return <InvoicesTableLoadingRow key={i} />
               })}
           </tbody>
         </table>
 
+        {/* Empty State */}
         {invoices?.length === 0 && !isLoading && (
           <div
             className="text-center bg-white py-10 px-6 rounded fade-in"
@@ -154,13 +126,26 @@ const InvoicesTable = () => {
           >
             <HiOutlineDocumentSearch className="mx-auto h-10 w-10 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900">No invoices</h3>
-            <p className="mt-1 text-sm text-gray-500">Todo</p>
           </div>
         )}
 
-        {invoices?.length && !isLoading && hasNextPage ? (
-          <Waypoint onEnter={() => console.log('load more')} />
-        ) : null}
+        {/* Pagination */}
+        {(invoices?.length > 0 || isLoading) && (
+          <div className="flex flex-row-reverse py-4 border-gray-200 px-4 border-t">
+            {hasNextPage && (
+              <Button onClick={nextPage} text="Next" className="ml-2" isLoading={isLoading} />
+            )}
+            {hasPrevPage && (
+              <Button
+                onClick={prevPage}
+                text="Previous"
+                variant="secondary"
+                isLoading={isLoading}
+              />
+            )}
+            {isLoading && <Button disabled={true} text="Loading" isLoading={isLoading} />}
+          </div>
+        )}
       </div>
     </div>
   )

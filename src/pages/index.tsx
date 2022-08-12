@@ -1,5 +1,6 @@
 import { useConnections, useProfitAndLoss } from 'hooks'
 
+import DateFilters from 'components/ProfitAndLoss/DateFilters'
 import Layout from 'components/Layout'
 import { NextPage } from 'next'
 import PageHeading from 'components/PageHeading'
@@ -10,7 +11,9 @@ import { withSession } from 'utils'
 
 const IndexPage: NextPage = () => {
   const { connection } = useConnections()
-  const { profitAndLoss } = useProfitAndLoss()
+
+  const { profitAndLoss, isLoading, startDate, setStartDate, setEndDate, endDate } =
+    useProfitAndLoss()
 
   if (!connection)
     return (
@@ -23,15 +26,23 @@ const IndexPage: NextPage = () => {
     <Layout title="Profit and Loss">
       <PageHeading
         title="Profit and Loss"
-        description={`From ${profitAndLoss?.start_date} to ${profitAndLoss?.end_date}.`}
+        description={`Profit & loss report coming from ${connection.name}.`}
+        action={
+          <DateFilters
+            startDate={startDate}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+            endDate={endDate}
+          />
+        }
       />
       <div className="py-6 space-y-6 xl:space-y-8 mt-3 border-t border-gray-200">
-        <ProfitAndLossStats />
-        <TotalProfitAndLoss />
+        <ProfitAndLossStats profitAndLoss={profitAndLoss} isLoading={isLoading} />
         <div className="grid 2xl:grid-cols-2 gap-8">
-          {profitAndLoss && <ProfitAndLoss type="income" />}
-          {profitAndLoss && <ProfitAndLoss type="expenses" />}
+          <ProfitAndLoss profitAndLoss={profitAndLoss} type="income" />
+          <ProfitAndLoss profitAndLoss={profitAndLoss} type="expenses" />
         </div>
+        <TotalProfitAndLoss />
       </div>
     </Layout>
   )

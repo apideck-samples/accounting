@@ -15,7 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const response: GetInvoicesResponse = await apideck.accounting.invoicesAll({
-      limit: 20,
+      limit: 10,
       serviceId,
       cursor
     })

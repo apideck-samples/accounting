@@ -15,7 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const response: GetCustomersResponse = await apideck.accounting.customersAll({
-      limit: 20,
+      limit: 24,
       serviceId,
       cursor
     })

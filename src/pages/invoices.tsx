@@ -1,16 +1,12 @@
-import { useConnections, useInvoices } from 'hooks'
-
 import InvoicesTable from 'components/Invoices/InvoicesTable'
 import Layout from 'components/Layout'
 import { NextPage } from 'next'
 import PageHeading from 'components/PageHeading'
+import { useConnections } from 'hooks'
 import { withSession } from 'utils'
 
 const InvoicesPage: NextPage = () => {
   const { connection } = useConnections()
-  const { invoices } = useInvoices()
-
-  console.log('invoices', invoices)
 
   return (
     <Layout title="Invoices">

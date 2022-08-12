@@ -1,11 +1,14 @@
 import { AiFillPieChart, AiOutlineAreaChart, AiOutlineUsergroupAdd } from 'react-icons/ai'
 
+import { ProfitAndLoss } from '@apideck/node'
 import StatCard from 'components/StatCard'
-import { useProfitAndLoss } from 'hooks'
 
-const ProfitAndLossStats = () => {
-  const { profitAndLoss, isLoading } = useProfitAndLoss()
+interface Props {
+  profitAndLoss: ProfitAndLoss
+  isLoading: boolean
+}
 
+const ProfitAndLossStats = ({ profitAndLoss, isLoading }: Props) => {
   const cards = [
     {
       name: 'Income',
