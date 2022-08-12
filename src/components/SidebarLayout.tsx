@@ -106,8 +106,8 @@ const SidebarLayout = ({ children }: Props) => {
                   </div>
                 </Transition.Child>
                 <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto custom-scrollbar-dark">
-                  <div className="flex-shrink-0 flex items-center px-4">
-                    <img className="h-8 w-auto" src="/img/logo-white.svg" alt="Workflow" />
+                  <div className="flex items-center flex-shrink-0 px-4">
+                    <img className="h-6 w-auto" src="/img/logo-white.svg" alt="Apideck" />
                   </div>
                   <div className="flex-shrink-0 flex border-b border-ui-600 px-3 py-4">
                     <SelectConnection />
