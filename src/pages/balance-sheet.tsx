@@ -3,9 +3,9 @@ import { useBalanceSheet, useConnections } from 'hooks'
 import BalanceSheet from 'components/BalanceSheet/BalanceSheet'
 import BalanceSheetStats from 'components/BalanceSheet/BalanceSheetStats'
 import Layout from 'components/Layout'
+import { NextPage } from 'next'
 import PageHeading from 'components/PageHeading'
 import Spinner from 'components/Spinner'
-import { NextPage } from 'next'
 import { withSession } from 'utils'
 
 const BalanceSheetPage: NextPage = () => {

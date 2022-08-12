@@ -1,20 +1,25 @@
-import { Invoice } from '@apideck/node'
+import { useConnections, useInvoices } from 'hooks'
+
+import InvoicesTable from 'components/Invoices/InvoicesTable'
 import Layout from 'components/Layout'
 import { NextPage } from 'next'
-import { useInvoices } from 'hooks'
+import PageHeading from 'components/PageHeading'
 import { withSession } from 'utils'
 
 const InvoicesPage: NextPage = () => {
+  const { connection } = useConnections()
   const { invoices } = useInvoices()
 
   console.log('invoices', invoices)
 
   return (
     <Layout title="Invoices">
-      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center truncate">
-        {invoices?.map((invoice: Invoice) => {
-          return <p key={invoice.id}>{invoice.id}</p>
-        })}
+      <PageHeading
+        title="Invoices"
+        description={`Invoices from ${connection?.name || 'different accounting connectors'}`}
+      />
+      <div className="py-6 space-y-6 xl:space-y-8 mt-3 border-t border-gray-200">
+        <InvoicesTable />
       </div>
     </Layout>
   )

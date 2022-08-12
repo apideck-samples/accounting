@@ -12,7 +12,7 @@ const CustomersPage: NextPage = () => {
     <Layout title="Customers">
       <PageHeading
         title="Customers"
-        description={`Customer data from different Accounting connectors`}
+        description={`Customer data from ${connection?.name || 'different Accounting connectors'}`}
       />
       <div className="py-6 space-y-6 xl:space-y-8 mt-3 border-t border-gray-200">
         {connection && <Customers />}
