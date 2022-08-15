@@ -11,10 +11,12 @@ interface Props {
 const InvoiceDetails = ({ invoice }: Props) => {
   const currency = invoice?.currency || 'USD'
 
+  console.log('invocie', invoice)
+
   return (
     <div className="divide-y divide-gray-200">
       <div className="pb-6">
-        <div className="h-24 bg-primary-700 sm:h-20 lg:h-28" />
+        <div className="h-24 bg-gradient bg-gradient-to-r from-primary-600 to-primary-500 sm:h-20 lg:h-28" />
         <div className="lg:-mt-15 -mt-12 flow-root px-4 sm:-mt-8 sm:flex sm:items-end sm:px-6">
           <div>
             <div className="-m-1 flex">
@@ -105,18 +107,23 @@ const InvoiceDetails = ({ invoice }: Props) => {
           </div>
           <div className="sm:flex sm:px-6 sm:py-5">
             <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0 lg:w-48">
-              Due date
+              Balance
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 sm:ml-6">
-              {invoice.due_date && new Date(invoice.due_date).toLocaleDateString()}
+              {invoice.balance !== undefined &&
+                invoice.balance !== null &&
+                new Intl.NumberFormat(currency, {
+                  style: 'currency',
+                  currency: currency
+                }).format(invoice.balance)}
             </dd>
           </div>
           <div className="sm:flex sm:px-6 sm:py-5">
             <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0 lg:w-48">
-              Invoice number
+              Due date
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 sm:ml-6">
-              {invoice.number}
+              {invoice.due_date && new Date(invoice.due_date).toLocaleDateString()}
             </dd>
           </div>
           <div className="sm:flex sm:py-5">
@@ -157,13 +164,13 @@ const InvoiceDetails = ({ invoice }: Props) => {
                               scope="col"
                               className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
                             >
-                              Price
+                              Quantity
                             </th>
                             <th
                               scope="col"
                               className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
                             >
-                              Quantity
+                              Price
                             </th>
                             <th
                               scope="col"
@@ -201,23 +208,29 @@ const InvoiceDetails = ({ invoice }: Props) => {
                                 </tr>
                               )
                             }
+
+                            const pricePerUnit =
+                              lineItem?.unit_price ||
+                              (lineItem?.quantity === 1 ? lineItem?.total_amount : '')
                             return (
                               <tr key={lineItem.id} className="border-b border-gray-200">
                                 <td className="whitespace-nowrap py-2 pl-4 pr-3 text-sm text-gray-500 sm:pl-6">
                                   {lineItem?.item?.id}
                                 </td>
-                                <td className="whitespace-nowrap px-2 py-2 text-sm font-medium text-gray-900">
-                                  {lineItem?.item?.name}
+                                <td className="whitespace-nowrap px-2 py-2 text-sm font-medium text-gray-900 truncate">
+                                  {lineItem?.item?.name || lineItem?.description}
                                 </td>
-                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500">
-                                  {lineItem?.unit_price || lineItem?.quantity === 1
-                                    ? lineItem?.total_amount
-                                    : ''}
-                                </td>
-                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-900">
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-700">
                                   {lineItem?.quantity}
                                 </td>
-                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500">
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-700">
+                                  {pricePerUnit &&
+                                    new Intl.NumberFormat(currency, {
+                                      style: 'currency',
+                                      currency: currency
+                                    }).format(pricePerUnit)}
+                                </td>
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-700">
                                   {lineItem?.total_amount &&
                                     new Intl.NumberFormat(currency, {
                                       style: 'currency',
