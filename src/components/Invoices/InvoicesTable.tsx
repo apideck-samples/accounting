@@ -1,11 +1,17 @@
 import { Button, Chip } from '@apideck/components'
 
 import { HiOutlineDocumentSearch } from 'react-icons/hi'
+import type { Invoice } from '@apideck/node'
+import InvoiceDetails from './InvoiceDetails'
 import InvoicesTableLoadingRow from './InvoicesTableLoadingRow'
+import SlideOver from 'components/SlideOver'
 import { useInvoices } from 'hooks'
+import { useState } from 'react'
 
 const InvoicesTable = () => {
   const { invoices, isLoading, hasNextPage, hasPrevPage, nextPage, prevPage } = useInvoices()
+  const [selectedInvoice, setSelectedInvoice] = useState<null | Invoice>(null)
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
     <div className="sm:px-4 md:px-0">
@@ -14,6 +20,9 @@ const InvoicesTable = () => {
         <table className="min-w-full divide-y divide-gray-300">
           <thead className="bg-gray-100">
             <tr>
+              <th scope="col" className="px-3 py-3.5 text-left text-sm font-medium text-gray-900 ">
+                <span className="whitespace-nowrap">Number</span>
+              </th>
               <th
                 scope="col"
                 className="py-3.5 pl-4 pr-3 text-left text-sm font-medium text-gray-900 sm:pl-6"
@@ -35,9 +44,6 @@ const InvoicesTable = () => {
               <th scope="col" className="px-3 py-3.5 text-left text-sm font-medium text-gray-900">
                 Total
               </th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-medium text-gray-900 ">
-                <span className="whitespace-nowrap">Number</span>
-              </th>
               {invoices?.length > 0 && invoices[0].status && (
                 <th
                   scope="col"
@@ -58,9 +64,11 @@ const InvoicesTable = () => {
                   key={invoice.id}
                   className="cursor-pointer hover:bg-gray-50 overflow-visible fade-in"
                   onClick={() => {
-                    console.log('invoice clicked: ', invoice.id)
+                    setSelectedInvoice(invoice)
+                    setIsOpen(true)
                   }}
                 >
+                  <td className="px-3 py-4 text-sm text-gray-900 truncate">{invoice.number}</td>
                   <td className="w-full max-w-0 py-4 pl-4 pr-3 text-sm  text-gray-900 sm:w-auto sm:max-w-none sm:pl-6">
                     <div className="flex-1 truncate hidden sm:block">
                       <h3 className="text-gray-800 text-sm truncate text-left">
@@ -90,7 +98,6 @@ const InvoicesTable = () => {
                       currency: currency
                     }).format(invoice.total)}
                   </td>
-                  <td className="px-3 py-4 text-sm text-gray-900 truncate">{invoice.number}</td>
                   {invoice.status && (
                     <td className="px-3 py-4 text-sm text-gray-500 truncate">
                       <span className="">
@@ -147,6 +154,16 @@ const InvoicesTable = () => {
           </div>
         )}
       </div>
+
+      <SlideOver
+        isOpen={isOpen}
+        title={`Invoice ${selectedInvoice?.number}`}
+        onClose={() => {
+          setIsOpen(false)
+        }}
+      >
+        {selectedInvoice && <InvoiceDetails invoice={selectedInvoice} />}
+      </SlideOver>
     </div>
   )
 }
