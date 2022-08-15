@@ -2,7 +2,9 @@ import ChartWrapper from 'components/ChartWrapper'
 import dynamic from 'next/dynamic'
 import { useMemo } from 'react'
 
-const Chart = dynamic(() => import('react-charts').then((module) => module.Chart), { ssr: false })
+const Chart = dynamic(() => import('react-charts').then((module) => module.Chart), {
+  ssr: false
+}) as any
 
 interface Props {
   title: string

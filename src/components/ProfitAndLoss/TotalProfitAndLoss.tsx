@@ -3,7 +3,9 @@ import Spinner from '../Spinner'
 import dynamic from 'next/dynamic'
 import { useMemo } from 'react'
 import { useProfitAndLoss } from 'hooks'
-const Chart = dynamic(() => import('react-charts').then((module) => module.Chart), { ssr: false })
+const Chart = dynamic(() => import('react-charts').then((module) => module.Chart), {
+  ssr: false
+}) as any
 
 const TotalProfitAndLoss = () => {
   const { isLoading, lastSixMonths } = useProfitAndLoss()

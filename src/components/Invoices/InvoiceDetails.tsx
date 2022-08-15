@@ -1,17 +1,49 @@
+import { Button, useToast } from '@apideck/components'
+import { Fragment, useState } from 'react'
 import type { Invoice, InvoiceLineItem } from '@apideck/node'
 import { Menu, Transition } from '@headlessui/react'
 
-import { Fragment } from 'react'
 import { HiDotsVertical } from 'react-icons/hi'
+import Spinner from 'components/Spinner'
+import { useInvoices } from 'hooks'
 
 interface Props {
   invoice: Invoice
+  onClose: () => void
 }
 
-const InvoiceDetails = ({ invoice }: Props) => {
+const InvoiceDetails = ({ invoice, onClose }: Props) => {
   const currency = invoice?.currency || 'USD'
+  const { deleteInvoice } = useInvoices()
+  const [isLoading, setIsLoading] = useState(false)
+  const { addToast } = useToast()
 
-  console.log('invocie', invoice)
+  const onDelete = async (id: string) => {
+    setIsLoading(true)
+    try {
+      const response = await deleteInvoice(id)
+      if (response?.data) {
+        addToast({
+          title: 'Invoice deleted',
+          type: 'success'
+        })
+        setIsLoading(false)
+        onClose()
+      } else {
+        addToast({
+          title: 'Invoice failed to delete',
+          type: 'error'
+        })
+      }
+    } catch (error: any) {
+      addToast({
+        title: 'Something went wrong',
+        description: error?.message,
+        type: 'error'
+      })
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="divide-y divide-gray-200">
@@ -55,7 +87,11 @@ const InvoiceDetails = ({ invoice }: Props) => {
                 <Menu as="div" className="relative inline-block text-left">
                   <Menu.Button className="inline-flex items-center rounded-md border border-gray-300 bg-white p-2 text-sm font-medium text-gray-400 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                     <span className="sr-only">Open options menu</span>
-                    <HiDotsVertical className="h-5 w-5" aria-hidden="true" />
+                    {isLoading ? (
+                      <Spinner className="h-5 w-5" />
+                    ) : (
+                      <HiDotsVertical className="h-5 w-5" aria-hidden="true" />
+                    )}
                   </Menu.Button>
                   <Transition
                     as={Fragment}
@@ -67,16 +103,22 @@ const InvoiceDetails = ({ invoice }: Props) => {
                     leaveTo="transform opacity-0 scale-95"
                   >
                     <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                      <div className="py-1">
+                      <div className="py-4 space-y-2 px-4">
                         <Menu.Item>
-                          <a href="#" className="text-gray-700 block px-4 py-2 text-sm">
+                          <Button variant="outline" className="text-gray-700 block text-sm w-full">
                             Update invoice
-                          </a>
+                          </Button>
                         </Menu.Item>
                         <Menu.Item>
-                          <a href="#" className="text-gray-700 block px-4 py-2 text-sm">
+                          <Button
+                            variant="danger-outline"
+                            type="button"
+                            isLoading={isLoading}
+                            onClick={() => onDelete(invoice?.id as string)}
+                            className="text-gray-700 block text-sm w-full"
+                          >
                             Delete invoice
-                          </a>
+                          </Button>
                         </Menu.Item>
                       </div>
                     </Menu.Items>

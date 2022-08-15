@@ -23,9 +23,9 @@ interface Props {
 
 const items = [
   {
-    name: 'Profit & Loss',
-    href: '/',
-    icon: FiBarChart2
+    name: 'Invoices',
+    href: `/invoices`,
+    icon: HiOutlineDocumentSearch
   },
   {
     name: 'Balance Sheet',
@@ -33,9 +33,9 @@ const items = [
     icon: HiOutlinePresentationChartBar
   },
   {
-    name: 'Invoices',
-    href: `/invoices`,
-    icon: HiOutlineDocumentSearch
+    name: 'Profit & Loss',
+    href: '/',
+    icon: FiBarChart2
   },
   {
     name: 'Customers',

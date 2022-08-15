@@ -2,7 +2,7 @@ import { DateInput, Tooltip } from '@apideck/components'
 
 import classNames from 'classnames'
 
-const DateFilters = ({ startDate, setStartDate, setEndDate, endDate }: any) => {
+const DateFilters = ({ startDate, setStartDate, setEndDate }: any) => {
   return (
     <div className="flex items-center justify-between space-x-3 2xl:space-x-4">
       <div className="hidden lg:flex w-full">

@@ -39,10 +39,31 @@ export const useInvoices = () => {
     return response.json()
   }
 
+  const removeInvoice = async (id: string) => {
+    const response = await fetch(
+      `/api/accounting/invoices/delete?jwt=${session?.jwt}&serviceId=${serviceId}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ id })
+      }
+    )
+    return response.json()
+  }
+
   const createInvoice = async (invoice: Invoice) => {
-    const invoices = [...data, invoice]
-    const options = { optimisticData: invoices, rollbackOnError: true }
-    mutate(getInvoicesUrl, addInvoice(invoice), options)
+    const response = await await addInvoice(invoice)
+    if (response?.data) {
+      mutate(getInvoicesUrl)
+    }
+    return response
+  }
+
+  const deleteInvoice = async (id: string) => {
+    const response = await await removeInvoice(id)
+    if (response?.data) {
+      mutate(getInvoicesUrl)
+    }
+    return response
   }
 
   const nextPage = () => {
@@ -67,6 +88,7 @@ export const useInvoices = () => {
     hasPrevPage: data?.meta?.cursors?.previous,
     nextPage,
     prevPage,
-    createInvoice
+    createInvoice,
+    deleteInvoice
   }
 }

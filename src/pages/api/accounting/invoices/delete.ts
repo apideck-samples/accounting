@@ -10,7 +10,7 @@ interface Params {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { id } = JSON.parse(req.body)
   const { jwt, serviceId }: Params = req.query
-  const apideck = init(jwt)
+  const apideck = init(jwt as any)
 
   const result = await apideck.accounting
     .invoicesDelete({ serviceId, id })

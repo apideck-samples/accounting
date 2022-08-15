@@ -162,7 +162,14 @@ const InvoicesTable = () => {
           setIsOpen(false)
         }}
       >
-        {selectedInvoice && <InvoiceDetails invoice={selectedInvoice} />}
+        {selectedInvoice && (
+          <InvoiceDetails
+            invoice={selectedInvoice}
+            onClose={() => {
+              setIsOpen(false)
+            }}
+          />
+        )}
       </SlideOver>
     </div>
   )
