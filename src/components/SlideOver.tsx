@@ -8,12 +8,17 @@ interface Props {
   onClose: () => void
   children: React.ReactNode
   title?: string
+  className?: string
 }
 
-const SlideOver = ({ title = '', isOpen, onClose, children }: Props) => {
+const SlideOver = ({ title = '', className = '', isOpen, onClose, children }: Props) => {
   return (
     <Transition.Root show={isOpen} as={Fragment}>
-      <Dialog as="div" className="fixed inset-0 overflow-hidden z-40" onClose={onClose}>
+      <Dialog
+        as="div"
+        className={`fixed inset-0 overflow-hidden z-30 ${className}`}
+        onClose={onClose}
+      >
         <div className="absolute inset-0 overflow-hidden">
           <Transition.Child
             as={Fragment}

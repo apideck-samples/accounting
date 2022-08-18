@@ -32,29 +32,34 @@ const ProfitAndLoss = ({ profitAndLoss, type = 'income' }: Props) => {
     ]
   }, [profitAndLoss, type])
 
-  const primaryAxis = useMemo(() => ({ getValue: (data: any) => data.title }), [])
-
-  const secondaryAxes: any = useMemo(
-    () => [{ elementType: 'bar', getValue: (data: any) => data.value }],
+  const primaryAxis = useMemo(
+    () => ({ interactionMode: 'closest', getValue: (data: any) => data.title }),
     []
   )
 
-  return (
+  const secondaryAxes: any = useMemo(
+    () => [{ elementType: 'bar', interactionMode: 'closest', getValue: (data: any) => data.value }],
+    []
+  )
+
+  return profitAndLoss ? (
     <ChartWrapper
       title={type}
-      subTitle={`From ${profitAndLoss?.start_date} to ${profitAndLoss?.end_date}`}
+      subTitle={
+        profitAndLoss
+          ? `From ${profitAndLoss?.start_date} to ${profitAndLoss?.end_date}`
+          : 'Loading...'
+      }
     >
-      {profitAndLoss && (
-        <Chart
-          options={{
-            data,
-            primaryAxis,
-            secondaryAxes
-          }}
-        />
-      )}
+      <Chart
+        options={{
+          data,
+          primaryAxis,
+          secondaryAxes
+        }}
+      />
     </ChartWrapper>
-  )
+  ) : null
 }
 
 export default ProfitAndLoss

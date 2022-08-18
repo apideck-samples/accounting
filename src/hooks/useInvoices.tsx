@@ -60,9 +60,8 @@ export const useInvoices = () => {
 
   const deleteInvoice = async (id: string) => {
     const response = await await removeInvoice(id)
-    if (response?.data) {
-      mutate(getInvoicesUrl)
-    }
+    mutate(getInvoicesUrl)
+
     return response
   }
 

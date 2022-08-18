@@ -8,20 +8,25 @@ import LineItems from './LineItems'
 import SelectInvoiceItems from './SelectInvoiceItems'
 import { useInvoiceItems } from 'hooks/useInvoiceItems'
 
-const CreateInvoiceForm = ({ closeForm }: { closeForm: any }) => {
+const CreateInvoiceForm = ({
+  closeForm,
+  openCustomerForm
+}: {
+  closeForm: any
+  openCustomerForm: any
+}) => {
   const { addModal, removeModal } = useModal()
   const { createInvoice } = useInvoices()
   const { invoiceItems } = useInvoiceItems()
   const { customers } = useCustomers()
   const [lineItems, setLineItems] = useState<InvoiceLineItem[]>([])
-  const [customer, setCustomer] = useState<LinkedCustomer>()
+  const [customer, setCustomer] = useState<LinkedCustomer | null>(null)
   const [invoiceNumber, setInvoiceNumber] = useState<string>()
   const [customerMemo, setCustomerMemo] = useState<string>()
   const [dueDate, setDueDate] = useState<Date>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const { addToast } = useToast()
 
-  console.log('lineItems', lineItems)
+  const { addToast } = useToast()
 
   const onInvoiceItemSelect = (invoiceItem: InvoiceItem) => {
     // Use the invoice item to create a new line item
@@ -109,6 +114,7 @@ const CreateInvoiceForm = ({ closeForm }: { closeForm: any }) => {
 
                 <button
                   type="button"
+                  onClick={openCustomerForm}
                   className="inline-flex mt-1 h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 border-dashed border-gray-200 bg-white text-gray-400 hover:border-gray-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 >
                   <span className="sr-only">Add customer</span>

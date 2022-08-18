@@ -3,15 +3,18 @@ import { Fragment, ReactNode, useState } from 'react'
 import {
   HiMenu,
   HiOutlineBookOpen,
+  HiOutlineCash,
   HiOutlineDocumentSearch,
   HiOutlineExternalLink,
   HiOutlinePresentationChartBar,
   HiOutlineUserGroup,
   HiX
 } from 'react-icons/hi'
+import { useConnections, useSession } from 'hooks'
 
 import ConsumerDropdown from './ConsumerDropdown'
 import { FiBarChart2 } from 'react-icons/fi'
+import { IoTelescopeOutline } from 'react-icons/io5'
 import Link from 'next/link'
 import SelectConnection from './SelectConnection'
 import classNames from 'classnames'
@@ -21,43 +24,63 @@ interface Props {
   children: ReactNode
 }
 
-const items = [
-  {
-    name: 'Invoices',
-    href: `/invoices`,
-    icon: HiOutlineDocumentSearch
-  },
-  {
-    name: 'Balance Sheet',
-    href: `/balance-sheet`,
-    icon: HiOutlinePresentationChartBar
-  },
-  {
-    name: 'Profit & Loss',
-    href: '/',
-    icon: FiBarChart2
-  },
-  {
-    name: 'Customers',
-    href: `/customers`,
-    icon: HiOutlineUserGroup
-  },
-  // {
-  //   name: 'Payments',
-  //   href: `/payments`,
-  //   icon: HiOutlineCash
-  // },
-  {
-    name: 'Documentation',
-    href: 'https://developers.apideck.com/apis/accounting/reference',
-    icon: HiOutlineBookOpen,
-    external: true
-  }
-]
-
 const SidebarLayout = ({ children }: Props) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { pathname } = useRouter()
+  const { session } = useSession()
+  const { connection } = useConnections()
+
+  const searchQuery = new URLSearchParams({
+    headers: JSON.stringify({
+      Authorization: `Bearer ${session?.jwt}`,
+      'x-apideck-auth-type': 'JWT',
+      'x-apideck-app-id': session?.applicationId,
+      'x-apideck-consumer-id': session?.consumerId,
+      'x-apideck-service-id': connection?.service_id
+    }),
+    id: 'accounting'
+  })
+
+  const items = [
+    {
+      name: 'Invoices',
+      href: `/invoices`,
+      icon: HiOutlineDocumentSearch
+    },
+    {
+      name: 'Balance Sheet',
+      href: `/balance-sheet`,
+      icon: HiOutlinePresentationChartBar
+    },
+    {
+      name: 'Profit & Loss',
+      href: '/',
+      icon: FiBarChart2
+    },
+    {
+      name: 'Customers',
+      href: `/customers`,
+      icon: HiOutlineUserGroup
+    },
+    {
+      name: 'Payments',
+      href: `/payments`,
+      icon: HiOutlineCash
+    },
+    {
+      name: 'Documentation',
+      href: 'https://developers.apideck.com/apis/accounting/reference',
+      icon: HiOutlineBookOpen,
+      external: true
+    },
+    {
+      name: 'API Explorer',
+      icon: IoTelescopeOutline,
+      current: false,
+      external: true,
+      href: `https://developers.apideck.com/api-explorer?${searchQuery}`
+    }
+  ]
 
   return (
     <>

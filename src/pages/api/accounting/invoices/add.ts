@@ -14,8 +14,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const apideck = init(jwt as any)
   const invoice = JSON.parse(body)
 
-  console.log('invoice', invoice)
-
   try {
     const response: CreateInvoiceResponse = await await apideck.accounting.invoicesAdd({
       serviceId,

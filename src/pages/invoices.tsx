@@ -1,4 +1,5 @@
 import { Button } from '@apideck/components'
+import CreateCustomerForm from 'components/Customers/CreateCustomerForm'
 import CreateInvoiceForm from 'components/Invoices/CreateInvoiceForm'
 import InvoicesTable from 'components/Invoices/InvoicesTable'
 import Layout from 'components/Layout'
@@ -11,27 +12,54 @@ import { withSession } from 'utils'
 
 const InvoicesPage: NextPage = () => {
   const { connection } = useConnections()
-  const [isOpen, setIsOpen] = useState<boolean>(false)
+  const [showInvoiceForm, setShowInvoiceForm] = useState<boolean>(false)
+  const [showCustomerForm, setShowCustomerForm] = useState<boolean>(false)
 
   return (
     <Layout title="Invoices">
       <PageHeading
         title="Invoices"
         description={`Invoices from ${connection?.name || 'different accounting connectors'}`}
-        action={[<Button key="invoice" text="Create invoice" onClick={() => setIsOpen(true)} />]}
+        action={[
+          <Button key="invoice" text="Create invoice" onClick={() => setShowInvoiceForm(true)} />
+        ]}
       />
       <div className="py-6 space-y-6 xl:space-y-8 mt-3 border-t border-gray-200">
         <InvoicesTable />
       </div>
 
       <SlideOver
-        isOpen={isOpen}
+        isOpen={showInvoiceForm}
         title={`Create Invoice`}
         onClose={() => {
-          setIsOpen(false)
+          setShowInvoiceForm(false)
         }}
       >
-        <CreateInvoiceForm closeForm={() => setIsOpen(false)} />
+        <CreateInvoiceForm
+          closeForm={() => {
+            setShowInvoiceForm(false)
+          }}
+          openCustomerForm={() => {
+            setShowInvoiceForm(false)
+            setShowCustomerForm(true)
+          }}
+        />
+      </SlideOver>
+      <SlideOver
+        isOpen={showCustomerForm}
+        className="z-40"
+        title={`Create customer`}
+        onClose={() => {
+          setShowCustomerForm(false)
+          setShowInvoiceForm(true)
+        }}
+      >
+        <CreateCustomerForm
+          closeForm={() => {
+            setShowCustomerForm(false)
+            setShowInvoiceForm(true)
+          }}
+        />
       </SlideOver>
     </Layout>
   )

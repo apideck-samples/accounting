@@ -14,7 +14,7 @@ const ChartWrapper = ({ title, subTitle, children }: Props) => {
         {subTitle && <p className="text-gray-700 text-sm">{subTitle}</p>}
       </div>
       <div className="p-5">
-        <div className="h-96 flex items-center justify-center">{children}</div>
+        <div className="h-96 flex items-center justify-center relative">{children}</div>
       </div>
     </div>
   )
