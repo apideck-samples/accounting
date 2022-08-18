@@ -36,6 +36,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null)
   const [token, setToken] = useCookieState('token', null, {
     encode: {
+      samesite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
       maxAge: 60 * 10 // 10 mins
     }
   })
