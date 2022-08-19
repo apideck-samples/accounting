@@ -10,6 +10,7 @@ import { useState } from 'react'
 
 const InvoicesTable = () => {
   const { invoices, isLoading, hasNextPage, hasPrevPage, nextPage, prevPage } = useInvoices()
+
   const [selectedInvoice, setSelectedInvoice] = useState<null | Invoice>(null)
   const [isOpen, setIsOpen] = useState(false)
 

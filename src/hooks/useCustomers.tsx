@@ -39,11 +39,29 @@ export const useCustomers = () => {
     return response.json()
   }
 
+  const removeCustomer = async (id: string) => {
+    const response = await fetch(
+      `/api/accounting/customers/delete?jwt=${session?.jwt}&serviceId=${serviceId}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ id })
+      }
+    )
+    return response.json()
+  }
+
   const createCustomer = async (customer: AccountingCustomer) => {
     const response = await await addCustomer(customer)
     if (response?.data) {
       mutate(getCustomersUrl)
     }
+    return response
+  }
+
+  const deleteCustomer = async (id: string) => {
+    const response = await await removeCustomer(id)
+    mutate(getCustomersUrl)
+
     return response
   }
 
@@ -62,6 +80,7 @@ export const useCustomers = () => {
     hasNextPage: data?.meta?.cursors?.next,
     currentPage: data?.meta?.cursors?.current,
     nextPage,
-    createCustomer
+    createCustomer,
+    deleteCustomer
   }
 }

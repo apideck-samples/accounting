@@ -11,6 +11,7 @@ import { withSession } from 'utils'
 
 const CustomersPage: NextPage = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false)
+
   const { connection } = useConnections()
 
   return (
