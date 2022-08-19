@@ -13,7 +13,7 @@ const SelectConnection = () => {
 
   const selectConnection = async (connection: Connection) => {
     if (connection.state === 'callable') {
-      setConnectionId(connection.id)
+      setConnectionId(connection.id as string)
     } else {
       setServiceId(connection.service_id as string)
     }

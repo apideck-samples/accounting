@@ -9,7 +9,7 @@ interface Params {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { jwt }: Params = req.query
-  const apideck = init(jwt)
+  const apideck = init(jwt as any)
 
   const result: Promise<GetConnectionsResponse> = await apideck.vault
     .connectionsAll({ api: 'accounting' })

@@ -44,7 +44,7 @@ const SidebarLayout = ({ children }: Props) => {
   const items = [
     {
       name: 'Invoices',
-      href: `/invoices`,
+      href: `/`,
       icon: HiOutlineDocumentSearch
     },
     {
@@ -54,7 +54,7 @@ const SidebarLayout = ({ children }: Props) => {
     },
     {
       name: 'Profit & Loss',
-      href: '/',
+      href: '/profit-and-loss',
       icon: FiBarChart2
     },
     {

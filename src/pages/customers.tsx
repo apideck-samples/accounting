@@ -25,7 +25,7 @@ const CustomersPage: NextPage = () => {
       </div>
       <SlideOver
         isOpen={isOpen}
-        title={`Create customer`}
+        title={`Create a new customer in ${connection?.name}`}
         onClose={() => {
           setIsOpen(false)
         }}

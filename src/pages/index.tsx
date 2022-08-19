@@ -1,51 +1,88 @@
-import { useConnections, useProfitAndLoss } from 'hooks'
-
-import DateFilters from 'components/ProfitAndLoss/DateFilters'
+import { Button } from '@apideck/components'
+import CreateCustomerForm from 'components/Customers/CreateCustomerForm'
+import CreateInvoiceForm from 'components/Invoices/CreateInvoiceForm'
+import CreateInvoiceItemForm from 'components/Invoices/CreateInvoiceItemForm'
+import InvoicesTable from 'components/Invoices/InvoicesTable'
 import Layout from 'components/Layout'
 import { NextPage } from 'next'
 import PageHeading from 'components/PageHeading'
-import ProfitAndLoss from 'components/ProfitAndLoss/ProfitAndLoss'
-import ProfitAndLossStats from 'components/ProfitAndLoss/ProfitAndLossStats'
-import TotalProfitAndLoss from 'components/ProfitAndLoss/TotalProfitAndLoss'
+import SlideOver from 'components/SlideOver'
+import { useConnections } from 'hooks'
+import { useState } from 'react'
 import { withSession } from 'utils'
 
-const IndexPage: NextPage = () => {
+const InvoicesPage: NextPage = () => {
   const { connection } = useConnections()
-
-  const { profitAndLoss, isLoading, startDate, setStartDate, setEndDate, endDate } =
-    useProfitAndLoss()
-
-  if (!connection)
-    return (
-      <Layout title="Dashboard" description="Get started by selecting a connection">
-        <div />
-      </Layout>
-    )
+  const [showInvoiceForm, setShowInvoiceForm] = useState<boolean>(false)
+  const [showInvoiceItemForm, setShowInvoiceItemForm] = useState<boolean>(false)
+  const [showCustomerForm, setShowCustomerForm] = useState<boolean>(false)
 
   return (
-    <Layout title="Profit and Loss">
+    <Layout title="Invoices">
       <PageHeading
-        title="Profit and Loss"
-        description={`Profit & loss report coming from ${connection.name}.`}
-        action={
-          <DateFilters
-            startDate={startDate}
-            setStartDate={setStartDate}
-            setEndDate={setEndDate}
-            endDate={endDate}
-          />
-        }
+        title="Invoices"
+        description={`Invoices from ${connection?.name || 'different accounting connectors'}`}
+        action={[
+          <Button key="invoice" text="Create invoice" onClick={() => setShowInvoiceForm(true)} />
+        ]}
       />
       <div className="py-6 space-y-6 xl:space-y-8 mt-3 border-t border-gray-200">
-        <ProfitAndLossStats profitAndLoss={profitAndLoss} isLoading={isLoading} />
-        <div className="grid 2xl:grid-cols-2 gap-8">
-          <ProfitAndLoss profitAndLoss={profitAndLoss} type="income" />
-          <ProfitAndLoss profitAndLoss={profitAndLoss} type="expenses" />
-        </div>
-        <TotalProfitAndLoss />
+        <InvoicesTable />
       </div>
+
+      <SlideOver
+        isOpen={showInvoiceForm}
+        title={`Create a new invoice in ${connection?.name}`}
+        onClose={() => {
+          setShowInvoiceForm(false)
+        }}
+      >
+        <CreateInvoiceForm
+          closeForm={() => {
+            setShowInvoiceForm(false)
+          }}
+          openCustomerForm={() => {
+            setShowInvoiceForm(false)
+            setShowCustomerForm(true)
+          }}
+          openInvoiceItemsForm={() => {
+            setShowInvoiceForm(false)
+            setShowInvoiceItemForm(true)
+          }}
+        />
+      </SlideOver>
+      <SlideOver
+        isOpen={showCustomerForm}
+        title={`Create customer for ${connection?.name}`}
+        onClose={() => {
+          setShowCustomerForm(false)
+          setShowInvoiceForm(true)
+        }}
+      >
+        <CreateCustomerForm
+          closeForm={() => {
+            setShowCustomerForm(false)
+            setShowInvoiceForm(true)
+          }}
+        />
+      </SlideOver>
+      <SlideOver
+        isOpen={showInvoiceItemForm}
+        title={`Create invoice item for ${connection?.name}`}
+        onClose={() => {
+          setShowInvoiceItemForm(false)
+          setShowInvoiceForm(true)
+        }}
+      >
+        <CreateInvoiceItemForm
+          closeForm={() => {
+            setShowInvoiceItemForm(false)
+            setShowInvoiceForm(true)
+          }}
+        />
+      </SlideOver>
     </Layout>
   )
 }
 
-export default withSession(IndexPage)
+export default withSession(InvoicesPage)

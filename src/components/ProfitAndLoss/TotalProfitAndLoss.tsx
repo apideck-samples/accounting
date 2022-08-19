@@ -3,7 +3,7 @@ import Spinner from '../Spinner'
 import dynamic from 'next/dynamic'
 import { useMemo } from 'react'
 import { useProfitAndLoss } from 'hooks'
-const Chart = dynamic(() => import('react-charts').then((module) => module.Chart), {
+const Chart = dynamic(() => import('react-charts').then((module: any) => module.Chart), {
   ssr: false
 }) as any
 

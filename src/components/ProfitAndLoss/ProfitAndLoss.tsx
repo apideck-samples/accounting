@@ -4,7 +4,7 @@ import { ProfitAndLossRecord } from '@apideck/node'
 import dynamic from 'next/dynamic'
 import { useMemo } from 'react'
 
-const Chart = dynamic(() => import('react-charts').then((module) => module.Chart), {
+const Chart = dynamic(() => import('react-charts').then((module: any) => module.Chart), {
   ssr: false
 }) as any
 

@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 
-import { CreateCustomerResponse } from '@apideck/node'
+import { CreateInvoiceItemResponse } from '@apideck/node'
 import { init } from '../../_utils'
 
 interface Params {
@@ -12,12 +12,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { body, query } = req
   const { jwt, serviceId }: Params = query
   const apideck = init(jwt as any)
-  const customer = JSON.parse(body)
+  const invoiceItem = JSON.parse(body)
 
   try {
-    const response: CreateCustomerResponse = await await apideck.accounting.customersAdd({
+    const response: CreateInvoiceItemResponse = await await apideck.accounting.invoiceItemsAdd({
       serviceId,
-      customer
+      invoiceItem
     })
     res.json(response)
   } catch (error: any) {

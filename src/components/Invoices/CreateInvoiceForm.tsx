@@ -1,4 +1,12 @@
-import { Button, DateInput, Dropdown, useModal, useToast } from '@apideck/components'
+import {
+  Button,
+  DateInput,
+  Dropdown,
+  TextArea,
+  TextInput,
+  useModal,
+  useToast
+} from '@apideck/components'
 import { InvoiceItem, InvoiceLineItem, LinkedCustomer } from '@apideck/node'
 import { useCustomers, useInvoices } from 'hooks'
 import { useMemo, useState } from 'react'
@@ -10,10 +18,12 @@ import { useInvoiceItems } from 'hooks/useInvoiceItems'
 
 const CreateInvoiceForm = ({
   closeForm,
-  openCustomerForm
+  openCustomerForm,
+  openInvoiceItemsForm
 }: {
   closeForm: any
   openCustomerForm: any
+  openInvoiceItemsForm: any
 }) => {
   const { addModal, removeModal } = useModal()
   const { createInvoice } = useInvoices()
@@ -136,13 +146,12 @@ const CreateInvoiceForm = ({
               </label>
             </div>
             <div className="sm:col-span-2">
-              <input
-                type="text"
+              <TextInput
                 name="invoiceNumber"
                 id="invoiceNumber"
                 placeholder="Leave blank to auto-generate"
-                onChange={(e) => setInvoiceNumber(e.target.value)}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                onChange={(e) => setInvoiceNumber(e.currentTarget.value)}
+                className="block"
               />
             </div>
           </div>
@@ -151,7 +160,7 @@ const CreateInvoiceForm = ({
           <div className="space-y-1 px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:space-y-0 sm:px-6 sm:py-5">
             <div>
               <label
-                htmlFor="customer_memo"
+                htmlFor="customerMemo"
                 className="block text-sm font-medium text-gray-900 sm:mt-px sm:pt-2"
               >
                 {' '}
@@ -159,13 +168,12 @@ const CreateInvoiceForm = ({
               </label>
             </div>
             <div className="sm:col-span-2">
-              <textarea
-                id="customer_memo"
-                name="customer_memo"
-                rows={3}
-                className="block w-full rounded-md border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              <TextArea
+                id="customerMemo"
+                name="customerMemo"
+                className="block"
                 defaultValue={''}
-                onChange={(e) => setCustomerMemo(e.target.value)}
+                onChange={(e) => setCustomerMemo(e.currentTarget.value)}
               />
             </div>
           </div>
@@ -183,7 +191,7 @@ const CreateInvoiceForm = ({
                   onChange={(e: any) => setDueDate(e.target?.value)}
                   placeholder="Select Due Date"
                   minDate={new Date()}
-                  onClear={() => setDueDate(null)}
+                  onClear={() => setDueDate(undefined)}
                 />
               </div>
             </div>
@@ -284,7 +292,7 @@ const CreateInvoiceForm = ({
                 </svg>
                 <h3 className="mt-2 text-sm font-medium text-gray-900">No items</h3>
                 <p className="mt-1 text-sm text-gray-500">Start adding items to this invoice.</p>
-                <div className="mt-6">
+                <div className="mt-6 flex items-center justify-center">
                   <Button
                     type="button"
                     className="inline-flex"
@@ -300,9 +308,16 @@ const CreateInvoiceForm = ({
                       )
                     }
                   >
-                    <HiPlus className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
-                    New Item
+                    Select Item
                   </Button>
+                  <button
+                    type="button"
+                    onClick={openInvoiceItemsForm}
+                    className="ml-2 inline-flex mt-1 h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 border-dashed border-gray-200 bg-white text-gray-400 hover:border-gray-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                  >
+                    <span className="sr-only">Add customer</span>
+                    <HiPlus className="h-5 w-5" aria-hidden="true" />
+                  </button>
                 </div>
               </div>
             ) : (
