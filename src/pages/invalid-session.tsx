@@ -5,7 +5,7 @@ import { useSession } from 'hooks'
 import { useState } from 'react'
 
 const InvalidSessionPage: NextPage = () => {
-  const [consumerId, setConsumerId] = useState('test-consumer')
+  const [consumerId, setConsumerId] = useState('')
   const [userName, setUserName] = useState('Elon Musk')
   const [email, setEmail] = useState('elon@tesla.com')
   const [image, setImage] = useState(
@@ -71,7 +71,7 @@ const InvalidSessionPage: NextPage = () => {
                 htmlFor="consumerId"
                 className="block text-sm font-medium leading-5 text-gray-700 mb-1"
               >
-                Consumer ID
+                Consumer ID*
               </label>
               <div className="flex space-x-3">
                 <TextInput
@@ -89,6 +89,10 @@ const InvalidSessionPage: NextPage = () => {
                   isLoading={isLoading}
                 />
               </div>
+              <p className="text-xs text-gray-500 mt-2">
+                *Provide a unique ID. Most of the time, this is an ID of your internal data model
+                that represents a user or account.
+              </p>
             </div>
           </div>
         </div>

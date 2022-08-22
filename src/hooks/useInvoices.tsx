@@ -81,7 +81,7 @@ export const useInvoices = () => {
   return {
     invoices: data?.data,
     isLoading: !error && !data,
-    isError: data?.error || error,
+    error: data?.error || error,
     hasNextPage: data?.meta?.cursors?.next,
     currentPage: data?.meta?.cursors?.current,
     hasPrevPage: data?.meta?.cursors?.previous,

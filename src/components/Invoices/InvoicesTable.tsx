@@ -1,17 +1,20 @@
 import { Button, Chip } from '@apideck/components'
+import { HiExclamation, HiOutlineDocumentSearch } from 'react-icons/hi'
+import { useInvoices, useSession } from 'hooks'
 
-import { HiOutlineDocumentSearch } from 'react-icons/hi'
 import type { Invoice } from '@apideck/node'
 import InvoiceDetails from './InvoiceDetails'
 import InvoicesTableLoadingRow from './InvoicesTableLoadingRow'
 import SlideOver from 'components/SlideOver'
-import { useInvoices } from 'hooks'
+import { Vault } from '@apideck/react-vault'
 import { useState } from 'react'
 
 const InvoicesTable = () => {
-  const { invoices, isLoading, hasNextPage, hasPrevPage, nextPage, prevPage } = useInvoices()
+  const { invoices, error, isLoading, hasNextPage, hasPrevPage, nextPage, prevPage } = useInvoices()
 
   const [selectedInvoice, setSelectedInvoice] = useState<null | Invoice>(null)
+  const [vaultOpen, setVaultOpen] = useState(false)
+  const { session } = useSession()
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -137,6 +140,22 @@ const InvoicesTable = () => {
           </div>
         )}
 
+        {error && (
+          <div
+            className="text-center bg-white py-10 px-6 rounded fade-in"
+            data-testid="empty-state"
+          >
+            <HiExclamation className="mx-auto h-10 w-10 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">{JSON.stringify(error)}</h3>
+            {error === 'Unauthorized' && (
+              <>
+                <p className="mt-1 mb-3">Please first connect with at least one service</p>
+                <Button text="Authorize integration" onClick={() => setVaultOpen(true)} />
+              </>
+            )}
+          </div>
+        )}
+
         {/* Pagination */}
         {(invoices?.length > 0 || isLoading) && (
           <div className="flex flex-row-reverse py-4 border-gray-200 px-4 border-t">
@@ -172,6 +191,15 @@ const InvoicesTable = () => {
           />
         )}
       </SlideOver>
+      {vaultOpen && (
+        <Vault
+          token={session?.jwt as string}
+          open={true}
+          showAttribution={false}
+          unifiedApi={'accounting'}
+          onClose={() => setVaultOpen(false)}
+        />
+      )}
     </div>
   )
 }

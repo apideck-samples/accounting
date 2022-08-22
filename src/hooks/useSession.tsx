@@ -59,6 +59,16 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
 
   // Creates a test session with a random consumerID
   const createSession = async ({ consumerId, consumerMetadata }: CreateSessionOptions) => {
+    if (!consumerId) {
+      addToast({
+        title: 'Consumer ID is required',
+        description:
+          'Provide a unique ID. Most of the time, this is an ID of your internal data model that represents a user or account in your system.',
+        type: 'warning',
+        closeAfter: 7000
+      })
+      return
+    }
     try {
       setIsLoading(true)
       const raw = await fetch(`/api/vault/sessions?consumerId=${consumerId}`, {
