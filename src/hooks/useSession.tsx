@@ -106,7 +106,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <SessionContext.Provider value={{ createSession, session, clearSession, token, isLoading }}>
+    <SessionContext.Provider
+      value={{ createSession, session, clearSession, setToken, token, isLoading }}
+    >
       {children}
     </SessionContext.Provider>
   )

@@ -1,7 +1,8 @@
-import { Dispatch, ReactNode, createContext, useContext } from 'react'
+import { Dispatch, ReactNode, createContext, useContext, useEffect } from 'react'
 
 import { Connection } from '@apideck/node'
 import { useCookieState } from './useCookieState'
+import { useRouter } from 'next/router'
 import useSWR from 'swr'
 import { useSession } from 'hooks'
 
@@ -17,6 +18,7 @@ const ConnectorContext = createContext<Partial<ContextProps>>({})
 
 export const ConnectionsProvider = ({ children }: { children: ReactNode }) => {
   const { session } = useSession()
+  const { push, pathname } = useRouter()
   const [connectionId, setConnectionId] = useCookieState('connectionId', null, {
     encode: {
       maxAge: 60 * 10 // 10 mins
@@ -34,13 +36,22 @@ export const ConnectionsProvider = ({ children }: { children: ReactNode }) => {
   )
 
   const isLoading = !!(session?.jwt && !data && !error)
+  const connections = data?.data
+  const connection = connections?.find((c: Connection) => c.id === connectionId)
+  const callableConnections = connections?.filter(
+    (connection: Connection) => connection.state === 'callable'
+  )
 
-  const connection = data?.data?.find((c: Connection) => c.id === connectionId)
+  useEffect(() => {
+    if (!connectionId && callableConnections?.length) {
+      setConnectionId(callableConnections[0].id)
+    }
+  }, [setConnectionId, callableConnections, connectionId])
+
+  if (!data?.data && error && pathname !== '/invalid-session') push('/invalid-session')
 
   return (
-    <ConnectorContext.Provider
-      value={{ setConnectionId, connection, isLoading, connections: data?.data }}
-    >
+    <ConnectorContext.Provider value={{ setConnectionId, connection, isLoading, connections }}>
       {children}
     </ConnectorContext.Provider>
   )

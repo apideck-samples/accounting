@@ -7,7 +7,7 @@ export const init = (jwt: string) => {
   const { applicationId, consumerId } = camelCaseKeys(decoded) as any
 
   return new Apideck({
-    apiKey: `${process.env.NEXT_PUBLIC_API_KEY}`,
+    apiKey: `${process.env.API_KEY}`,
     appId: `${applicationId}`,
     consumerId
     // basePath: 'https://mock-api.apideck.com/'

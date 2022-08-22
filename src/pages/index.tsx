@@ -27,9 +27,12 @@ const InvoicesPage: NextPage = () => {
         ]}
       />
       <div className="py-6 space-y-6 xl:space-y-8 mt-3 border-t border-gray-200">
-        <InvoicesTable />
+        {connection ? (
+          <InvoicesTable />
+        ) : (
+          <p className="text-gray-900">Please first select a service on the sidebar menu</p>
+        )}
       </div>
-
       <SlideOver
         isOpen={showInvoiceForm}
         title={`Create a new invoice in ${connection?.name}`}

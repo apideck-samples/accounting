@@ -29,8 +29,8 @@ You can find the overview of accounting connectors here: https://platform.apidec
 #### Step 2: Update your environment variables
 
 - Copy `.env.example` and create a `.env.local` file
-- Add your API key: `NEXT_PUBLIC_API_KEY=<your-api-key>`
-- Add your Application ID: `NEXT_PUBLIC_APP_ID=<your-app-id>`
+- Add your API key: `API_KEY=<your-api-key>`
+- Add your Application ID: `APP_ID=<your-app-id>`
 - Your env should also include `NEXT_PUBLIC_API_URL=https://unify.apideck.com`
 
 Note: You can find your credentials in the admin: https://platform.apideck.com/configuration/api-keys
