@@ -1,4 +1,3 @@
-import { Button } from '@apideck/components'
 import Layout from 'components/Layout'
 import { NextPage } from 'next'
 import PageHeading from 'components/PageHeading'
@@ -14,13 +13,6 @@ const PaymentsPage: NextPage = () => {
       <PageHeading
         title="Payments"
         description={`Payments from ${connection?.name || 'different accounting connectors'}`}
-        action={[
-          <Button
-            key="invoice"
-            text="Export"
-            onClick={() => console.log('Oh, yeah sorry but this does not work.')}
-          />
-        ]}
       />
       <div className="py-6 space-y-6 xl:space-y-8 mt-3 border-t border-gray-200">
         <PaymentsTable />

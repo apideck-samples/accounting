@@ -21,7 +21,7 @@ const CreateInvoiceItemForm = ({ closeForm }: { closeForm: any }) => {
       description,
       unit_price: unitPrice,
       type: itemType
-      // expense_account: { id: '7' }
+      // expense_account: { id: '7' } TODO: Add expense account ID or Income Account ID
     }
     const response = await createInvoiceItem(invoiceItem)
     setIsLoading(false)

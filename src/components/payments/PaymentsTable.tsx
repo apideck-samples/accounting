@@ -58,9 +58,6 @@ const PaymentsTable = () => {
               >
                 Total amount
               </th>
-              <th scope="col" className="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-6">
-                <span className="sr-only">Edit</span>
-              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
@@ -95,11 +92,6 @@ const PaymentsTable = () => {
                       style: 'currency',
                       currency: currency
                     }).format(payment?.total_amount as any)}
-                  </td>
-                  <td className="relative whitespace-nowrap py-2 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                    <a href="#" className="text-indigo-600 hover:text-indigo-900">
-                      Edit<span className="sr-only">, {payment.id}</span>
-                    </a>
                   </td>
                 </tr>
               )

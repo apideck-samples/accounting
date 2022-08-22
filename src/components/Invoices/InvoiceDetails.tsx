@@ -105,11 +105,6 @@ const InvoiceDetails = ({ invoice, onClose }: Props) => {
                     <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="py-4 space-y-2 px-4">
                         <Menu.Item>
-                          <Button variant="outline" className="text-gray-700 block text-sm w-full">
-                            Update invoice
-                          </Button>
-                        </Menu.Item>
-                        <Menu.Item>
                           <Button
                             variant="danger-outline"
                             type="button"
