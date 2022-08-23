@@ -63,7 +63,9 @@ export const withSession: WithPageSessionRequired = (Component, options = {}) =>
     const [mounted, setMounted] = useState(false)
 
     const {
-      returnTo = '/invalid-session',
+      returnTo = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production'
+        ? 'https://apideck.com/samples/accounting'
+        : '/invalid-session',
       onRedirecting = defaultOnRedirecting,
       onError = defaultOnError,
       onLoading = defaultOnLoading
