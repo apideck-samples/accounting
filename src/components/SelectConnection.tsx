@@ -2,14 +2,28 @@ import { Menu, Transition } from '@headlessui/react'
 import { useConnections, useSession } from 'hooks'
 
 import { Connection } from '@apideck/node'
+import { ApideckVault } from '@apideck/vault-js'
+import { useEffect, useState } from 'react'
 import Spinner from './Spinner'
-import { Vault } from '@apideck/react-vault'
-import { useState } from 'react'
 
 const SelectConnection = () => {
   const { setConnectionId, connection, connections, isLoading } = useConnections()
   const { token } = useSession()
   const [serviceId, setServiceId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (token && serviceId) {
+      ApideckVault.open({
+        token: token,
+        showAttribution: true,
+        serviceId: serviceId,
+        unifiedApi: 'accounting',
+        onClose: () => {
+          setServiceId(null)
+        }
+      })
+    }
+  }, [token, serviceId])
 
   const selectConnection = async (connection: Connection) => {
     if (connection.state === 'callable') {
@@ -114,16 +128,6 @@ const SelectConnection = () => {
           </>
         )}
       </Menu>
-      {token && serviceId && (
-        <Vault
-          token={token}
-          open={true}
-          showAttribution={false}
-          serviceId={serviceId}
-          unifiedApi={'accounting'}
-          onClose={() => setServiceId(null)}
-        />
-      )}
     </div>
   )
 }

@@ -48,6 +48,11 @@
     react-select "^5.2.2"
     swr "^1.0.1"
 
+"@apideck/vault-js@^1.7.0":
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@apideck/vault-js/-/vault-js-1.7.0.tgz#da0878ac69faad5410158e73fb5b1fcbdf47d039"
+  integrity sha512-CTQlcscwWbqTO2fFkVp6CsjD+e+gq1Zxv3LfnLIxFVLsFyFRgN888dc/uPB+z2Mx5MHtynrHQu7tHa68yxddwQ==
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.4", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.16.7":
   version "7.16.7"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.16.7.tgz#44416b6bd7624b998f5b1af5d470856c40138789"

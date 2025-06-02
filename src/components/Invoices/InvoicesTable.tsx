@@ -1,13 +1,13 @@
 import { Button, Chip } from '@apideck/components'
-import { HiExclamation, HiOutlineDocumentSearch } from 'react-icons/hi'
 import { useInvoices, useSession } from 'hooks'
+import { HiExclamation, HiOutlineDocumentSearch } from 'react-icons/hi'
 
 import type { Invoice } from '@apideck/node'
+import { ApideckVault } from '@apideck/vault-js'
+import SlideOver from 'components/SlideOver'
+import { useEffect, useState } from 'react'
 import InvoiceDetails from './InvoiceDetails'
 import InvoicesTableLoadingRow from './InvoicesTableLoadingRow'
-import SlideOver from 'components/SlideOver'
-import { Vault } from '@apideck/react-vault'
-import { useState } from 'react'
 
 const InvoicesTable = () => {
   const { invoices, error, isLoading, hasNextPage, hasPrevPage, nextPage, prevPage } = useInvoices()
@@ -16,6 +16,17 @@ const InvoicesTable = () => {
   const [vaultOpen, setVaultOpen] = useState(false)
   const { session } = useSession()
   const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    if (vaultOpen && session?.jwt) {
+      ApideckVault.open({
+        token: session.jwt as string,
+        showAttribution: true,
+        unifiedApi: 'accounting',
+        onClose: () => setVaultOpen(false)
+      })
+    }
+  }, [vaultOpen, session])
 
   return (
     <div className="sm:px-4 md:px-0">
@@ -191,15 +202,6 @@ const InvoicesTable = () => {
           />
         )}
       </SlideOver>
-      {vaultOpen && (
-        <Vault
-          token={session?.jwt as string}
-          open={true}
-          showAttribution={false}
-          unifiedApi={'accounting'}
-          onClose={() => setVaultOpen(false)}
-        />
-      )}
     </div>
   )
 }
