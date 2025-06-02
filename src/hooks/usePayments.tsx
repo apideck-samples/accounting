@@ -1,33 +1,25 @@
+import type { Payment } from '@apideck/unify/models/components'
 import { useConnections, useSession } from 'hooks'
-import { useEffect, useState } from 'react'
-
-import { fetcher } from 'utils'
-import { usePrevious } from '@apideck/components'
+import { useState } from 'react'
 import useSWR from 'swr'
+import { fetcher } from 'utils'
 
 export const usePayments = () => {
-  const [cursor, setCursor] = useState(null)
+  const [cursor, setCursor] = useState<string | null | undefined>(null)
   const { connection } = useConnections()
   const { session } = useSession()
-  const serviceId = connection?.service_id || ''
-  const prevServiceId = usePrevious(serviceId)
+  const serviceId = connection?.serviceId || ''
 
-  const hasNewCursor = cursor && (!prevServiceId || prevServiceId === serviceId)
+  const hasNewCursor = !!cursor
   const cursorParams = hasNewCursor ? `&cursor=${cursor}` : ''
-  const getInvoicesUrl = serviceId
+  const getPaymentsUrl = serviceId
     ? `/api/accounting/payments/all?jwt=${session?.jwt}&serviceId=${serviceId}${cursorParams}`
     : null
 
-  const { data, error } = useSWR(getInvoicesUrl, fetcher)
-
-  useEffect(() => {
-    if (prevServiceId && prevServiceId !== serviceId) {
-      setCursor(null)
-    }
-  }, [serviceId, prevServiceId])
+  const { data, error: swrError } = useSWR(getPaymentsUrl, fetcher)
 
   const nextPage = () => {
-    const nextCursor = data?.meta?.cursors?.next
+    const nextCursor = data?.getPaymentsResponse?.meta?.cursors?.next
 
     if (nextCursor) {
       setCursor(nextCursor)
@@ -35,17 +27,23 @@ export const usePayments = () => {
   }
 
   const prevPage = () => {
-    const prevCursor = data?.meta?.cursors?.previous
-    setCursor(prevCursor)
+    const prevCursor = data?.getPaymentsResponse?.meta?.cursors?.previous
+    if (prevCursor) {
+      setCursor(prevCursor)
+    }
   }
 
+  const isLoading = !swrError && !data && !!getPaymentsUrl
+  const responseData = data?.getPaymentsResponse
+  const apiErrorMessage = data?.message
+
   return {
-    payments: data?.data,
-    isLoading: !error && !data,
-    isError: data?.error || error,
-    hasNextPage: data?.meta?.cursors?.next,
-    currentPage: data?.meta?.cursors?.current,
-    hasPrevPage: data?.meta?.cursors?.previous,
+    payments: responseData?.data as Payment[] | undefined,
+    isLoading: isLoading,
+    isError: swrError || apiErrorMessage || responseData?.error,
+    hasNextPage: !!responseData?.meta?.cursors?.next,
+    hasPrevPage: !!responseData?.meta?.cursors?.previous,
+    currentPage: responseData?.meta?.cursors?.current,
     nextPage,
     prevPage
   }

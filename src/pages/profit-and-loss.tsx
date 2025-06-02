@@ -1,12 +1,12 @@
 import { useConnections, useProfitAndLoss } from 'hooks'
 
-import DateFilters from 'components/ProfitAndLoss/DateFilters'
 import Layout from 'components/Layout'
-import { NextPage } from 'next'
 import PageHeading from 'components/PageHeading'
+import DateFilters from 'components/ProfitAndLoss/DateFilters'
 import ProfitAndLoss from 'components/ProfitAndLoss/ProfitAndLoss'
 import ProfitAndLossStats from 'components/ProfitAndLoss/ProfitAndLossStats'
 import TotalProfitAndLoss from 'components/ProfitAndLoss/TotalProfitAndLoss'
+import { NextPage } from 'next'
 import { withSession } from 'utils'
 
 const ProfitAndLossPage: NextPage = () => {

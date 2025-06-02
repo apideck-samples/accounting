@@ -1,5 +1,5 @@
 import { Button, useToast } from '@apideck/components'
-import { EmailType, PhoneNumberType } from '@apideck/node'
+import type { CustomerInput, Email, PhoneNumber } from '@apideck/unify/models/components'
 
 import { useCustomers } from 'hooks'
 import { useState } from 'react'
@@ -9,34 +9,81 @@ const CreateCustomerForm = ({ closeForm }: { closeForm: any }) => {
   const [firstName, setFirstName] = useState<string>('')
   const [lastName, setLastName] = useState<string>('')
   const [displayName, setDisplayName] = useState<string>('')
-  const [email, setEmail] = useState<string>('')
-  const [phoneNumber, setPhoneNumber] = useState<string>('')
+  const [emailAddress, setEmailAddress] = useState<string>('')
+  const [phoneNumberValue, setPhoneNumberValue] = useState<string>('')
   const [notes, setNotes] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const { addToast } = useToast()
 
-  const onSubmit = async (e: any) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-    const customer = {
-      first_name: firstName,
-      last_name: lastName,
-      display_name: displayName,
-      phone_numbers: phoneNumber
-        ? [{ number: phoneNumber, type: 'primary' as PhoneNumberType }]
-        : [],
-      emails: email ? [{ email, type: 'primary' as EmailType }] : [],
-      notes
+
+    let finalDisplayName = displayName.trim()
+    if (!finalDisplayName) {
+      const first = firstName.trim()
+      const last = lastName.trim()
+      if (first && last) {
+        finalDisplayName = `${first} ${last}`
+      } else if (first) {
+        finalDisplayName = first
+      } else if (last) {
+        finalDisplayName = last
+      }
     }
-    const response = await createCustomer(customer)
-    setIsLoading(false)
-    if (response.data) {
-      addToast({ title: 'New customer created', description: '', type: 'success' })
-      closeForm()
-      return
+
+    const customerPayload: CustomerInput = {
+      firstName: firstName,
+      lastName: lastName,
+      displayName: finalDisplayName,
+      phoneNumbers: phoneNumberValue
+        ? [{ number: phoneNumberValue, type: 'primary' } as PhoneNumber] // Cast to PhoneNumber
+        : undefined, // Explicitly undefined if not provided, as CustomerInput type expects Array<PhoneNumber> | undefined
+      emails: emailAddress
+        ? [{ email: emailAddress, type: 'primary' } as Email] // Cast to Email
+        : undefined, // Explicitly undefined
+      notes: notes,
+      passThrough: [
+        {
+          serviceId: 'xero', // Target Xero
+          operationId: 'accountingCustomersCreate', // Corresponds to the create operation
+          extendObject: {
+            Name: finalDisplayName // Xero often uses a top-level 'Name' field
+          }
+        }
+      ]
     }
-    if (response.error) {
-      addToast({ title: 'Error creating customer', description: response.error, type: 'error' })
+    try {
+      const response = await createCustomer(customerPayload)
+      setIsLoading(false)
+
+      if (response && response.id) {
+        addToast({
+          title: 'New customer created',
+          description: `ID: ${response.id}`,
+          type: 'success'
+        })
+        closeForm()
+      } else if (response && (response as any).message) {
+        addToast({
+          title: 'Error creating customer',
+          description: (response as any).message,
+          type: 'error'
+        })
+      } else if (!response) {
+        addToast({
+          title: 'Error creating customer',
+          description: 'Failed to create customer. No response data.',
+          type: 'error'
+        })
+      }
+    } catch (error: any) {
+      setIsLoading(false)
+      addToast({
+        title: 'Error creating customer',
+        description: error?.message || 'An unexpected error occurred.',
+        type: 'error'
+      })
     }
   }
 
@@ -64,6 +111,7 @@ const CreateCustomerForm = ({ closeForm }: { closeForm: any }) => {
                 name="firstName"
                 id="firstName"
                 placeholder="John"
+                value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               />
@@ -86,6 +134,7 @@ const CreateCustomerForm = ({ closeForm }: { closeForm: any }) => {
                 name="lastName"
                 id="lastName"
                 placeholder="Doe"
+                value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               />
@@ -105,9 +154,10 @@ const CreateCustomerForm = ({ closeForm }: { closeForm: any }) => {
             <div className="sm:col-span-2">
               <input
                 type="text"
-                name="lastName"
-                id="lastName"
-                placeholder="Doe"
+                name="displayName"
+                id="displayName"
+                placeholder="John Doe Co."
+                value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               />
@@ -118,7 +168,7 @@ const CreateCustomerForm = ({ closeForm }: { closeForm: any }) => {
           <div className="space-y-1 px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:space-y-0 sm:px-6 sm:py-5">
             <div>
               <label
-                htmlFor="Email"
+                htmlFor="emailAddress"
                 className="block text-sm font-medium text-gray-900 sm:mt-px sm:pt-2"
               >
                 Email
@@ -127,20 +177,21 @@ const CreateCustomerForm = ({ closeForm }: { closeForm: any }) => {
             <div className="sm:col-span-2">
               <input
                 type="text"
-                name="email"
-                id="email"
+                name="emailAddress"
+                id="emailAddress"
                 placeholder="john@doe.com"
-                onChange={(e) => setEmail(e.target.value)}
+                value={emailAddress}
+                onChange={(e) => setEmailAddress(e.target.value)}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               />
             </div>
           </div>
 
-          {/* Display name */}
+          {/* Phone number */}
           <div className="space-y-1 px-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:space-y-0 sm:px-6 sm:py-5">
             <div>
               <label
-                htmlFor="phoneNumber"
+                htmlFor="phoneNumberValue"
                 className="block text-sm font-medium text-gray-900 sm:mt-px sm:pt-2"
               >
                 Phone number
@@ -149,10 +200,11 @@ const CreateCustomerForm = ({ closeForm }: { closeForm: any }) => {
             <div className="sm:col-span-2">
               <input
                 type="text"
-                name="phoneNumber"
-                id="phoneNumber"
-                placeholder="Doe"
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                name="phoneNumberValue"
+                id="phoneNumberValue"
+                placeholder="+14155552671"
+                value={phoneNumberValue}
+                onChange={(e) => setPhoneNumberValue(e.target.value)}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
               />
             </div>
@@ -174,7 +226,7 @@ const CreateCustomerForm = ({ closeForm }: { closeForm: any }) => {
                 name="notes"
                 rows={3}
                 className="block w-full rounded-md border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                defaultValue={''}
+                value={notes}
                 placeholder="Some notes about this customer"
                 onChange={(e) => setNotes(e.target.value)}
               />

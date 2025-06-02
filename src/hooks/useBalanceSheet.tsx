@@ -1,22 +1,27 @@
+import type { BalanceSheet } from '@apideck/unify/models/components'
+import useSWR from 'swr'
 import { fetcher } from '../utils/fetcher'
 import { useConnections } from './useConnections'
-import useSWR from 'swr'
 import { useSession } from './useSession'
 
 export const useBalanceSheet = () => {
   const { connection } = useConnections()
   const { session } = useSession()
-  const serviceId = connection?.service_id || ''
+  const serviceId = connection?.serviceId || ''
 
   const getBalanceSheetUrl = serviceId
     ? `/api/accounting/balance-sheet?jwt=${session?.jwt}&serviceId=${serviceId}`
     : null
 
-  const { data, error } = useSWR(getBalanceSheetUrl, fetcher)
+  const { data, error: swrError } = useSWR(getBalanceSheetUrl, fetcher)
+
+  const isLoading = !swrError && !data && !!getBalanceSheetUrl
+  const responseData = data?.getBalanceSheetResponse
+  const apiErrorMessage = data?.message
 
   return {
-    balanceSheet: data?.data,
-    isLoading: !error && !data,
-    isError: data?.error || error
+    balanceSheet: responseData?.data as BalanceSheet | undefined,
+    isLoading: isLoading,
+    isError: swrError || apiErrorMessage || responseData?.error
   }
 }

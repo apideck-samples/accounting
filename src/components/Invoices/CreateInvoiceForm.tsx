@@ -7,14 +7,26 @@ import {
   useModal,
   useToast
 } from '@apideck/components'
-import { InvoiceItem, InvoiceLineItem, LinkedCustomer } from '@apideck/node'
+import {
+  Currency,
+  Invoice,
+  InvoiceItem,
+  InvoiceLineItem,
+  LinkedCustomer
+} from '@apideck/unify/models/components'
 import { useCustomers, useInvoices } from 'hooks'
 import { useMemo, useState } from 'react'
 
+import { useInvoiceItems } from 'hooks/useInvoiceItems'
 import { HiPlus } from 'react-icons/hi'
 import LineItems from './LineItems'
 import SelectInvoiceItems from './SelectInvoiceItems'
-import { useInvoiceItems } from 'hooks/useInvoiceItems'
+
+// Define a more specific type for customer options used by the Dropdown
+interface CustomerDropdownOption {
+  value: string
+  label: string
+}
 
 const CreateInvoiceForm = ({
   closeForm,
@@ -39,17 +51,14 @@ const CreateInvoiceForm = ({
   const { addToast } = useToast()
 
   const onInvoiceItemSelect = (invoiceItem: InvoiceItem) => {
-    // Use the invoice item to create a new line item
-    const newLineItem = {
+    const newLineItem: InvoiceLineItem = {
       item: { id: invoiceItem.id, code: invoiceItem.code, name: invoiceItem.name },
-      name: invoiceItem.name,
       description: invoiceItem.description,
       quantity: 1,
-      unit_price: invoiceItem.unit_price,
+      unitPrice: invoiceItem.unitPrice,
       type: 'sales_item',
-      total_amount: invoiceItem.unit_price
-    } as InvoiceLineItem
-
+      totalAmount: invoiceItem.unitPrice
+    }
     setLineItems([...lineItems, newLineItem])
     removeModal()
   }
@@ -58,38 +67,66 @@ const CreateInvoiceForm = ({
     setLineItems(lineItems.filter((li: InvoiceLineItem) => li && li.item?.id !== lineItem.item?.id))
   }
 
-  const onCustomerSelect = (option: any) => {
-    setCustomer({ id: option.value, display_name: option.label })
+  const onCustomerSelect = (option: CustomerDropdownOption) => {
+    setCustomer({ id: option.value, displayName: option.label })
   }
 
-  const onSubmit = async (e: any) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-    const invoice = {
+
+    const dueDateString = dueDate ? dueDate.toISOString().split('T')[0] : undefined
+
+    const invoiceToCreate = {
       number: invoiceNumber,
-      customer_memo: customerMemo,
-      due_date: dueDate,
+      customerMemo: customerMemo,
+      dueDate: dueDateString as string | undefined,
       customer: customer,
-      line_items: lineItems
+      lineItems: lineItems,
+      currency: 'USD' as Currency
     }
-    const response = await createInvoice(invoice)
+
+    const response = await createInvoice(invoiceToCreate as Omit<Invoice, 'id'>)
     setIsLoading(false)
-    if (response.data) {
-      addToast({ title: 'New Invoice created', description: '', type: 'success' })
+
+    if (response && (response as any).id) {
+      addToast({
+        title: 'New Invoice created',
+        description: `ID: ${(response as any).id}`,
+        type: 'success'
+      })
       closeForm()
       return
     }
-    if (response.error) {
-      addToast({ title: 'Error creating invoice', description: response.error, type: 'error' })
+    if (response && (response as any).message) {
+      addToast({
+        title: 'Error creating invoice',
+        description: (response as any).message,
+        type: 'error'
+      })
+    } else {
+      addToast({
+        title: 'Error creating invoice',
+        description: 'An unknown error occurred.',
+        type: 'error'
+      })
     }
   }
 
-  const customerOptions = useMemo(
+  const customerOptions: CustomerDropdownOption[] = useMemo(
     () =>
-      customers?.map((customer: LinkedCustomer) => ({
-        value: customer.id,
-        label: customer.display_name
-      })) || [],
+      customers
+        ?.map((cust: LinkedCustomer) => {
+          if (!cust.id) return null
+          return {
+            value: cust.id,
+            label: cust.displayName || cust.id || 'Unnamed Customer'
+          }
+        })
+        .filter(
+          (opt: { value: string; label: string } | null): opt is CustomerDropdownOption =>
+            opt !== null && typeof opt.value === 'string' && typeof opt.label === 'string'
+        ) || [],
     [customers]
   )
 
@@ -109,12 +146,12 @@ const CreateInvoiceForm = ({
             <div className="sm:col-span-2">
               <div className="flex space-x-2">
                 <Dropdown
-                  buttonLabel={'Select Customer'}
+                  buttonLabel={customer?.displayName || 'Select Customer'}
                   key={'customer'}
                   align={'left'}
                   className="!z-20 text-left"
                   buttonClassName="whitespace-nowrap !text-gray-700 !font-normal"
-                  onSelect={onCustomerSelect}
+                  onSelect={onCustomerSelect as (option: any) => void}
                   isScrollable={true}
                   isSearchable={true}
                   onClear={() => setCustomer(null)}
@@ -141,8 +178,7 @@ const CreateInvoiceForm = ({
                 htmlFor="invoice-number"
                 className="block text-sm font-medium text-gray-900 sm:mt-px sm:pt-2"
               >
-                {' '}
-                Invoice number{' '}
+                Invoice number
               </label>
             </div>
             <div className="sm:col-span-2">
@@ -163,8 +199,7 @@ const CreateInvoiceForm = ({
                 htmlFor="customerMemo"
                 className="block text-sm font-medium text-gray-900 sm:mt-px sm:pt-2"
               >
-                {' '}
-                Memo{' '}
+                Memo
               </label>
             </div>
             <div className="sm:col-span-2">
@@ -188,7 +223,9 @@ const CreateInvoiceForm = ({
                 <DateInput
                   name="dueDate"
                   type="date"
-                  onChange={(e: any) => setDueDate(e.target?.value)}
+                  onChange={(e: any) =>
+                    setDueDate(e.target?.value ? new Date(e.target.value) : undefined)
+                  }
                   placeholder="Select Due Date"
                   minDate={new Date()}
                   onClear={() => setDueDate(undefined)}
@@ -218,8 +255,7 @@ const CreateInvoiceForm = ({
                   </div>
                   <div className="pl-7 text-sm">
                     <label htmlFor="public-access" className="font-medium text-gray-900">
-                      {' '}
-                      Draft{' '}
+                      Draft
                     </label>
                   </div>
                 </div>
@@ -235,8 +271,7 @@ const CreateInvoiceForm = ({
                   </div>
                   <div className="pl-7 text-sm">
                     <label htmlFor="restricted-access" className="font-medium text-gray-900">
-                      {' '}
-                      Submitted{' '}
+                      Submitted
                     </label>
                   </div>
                 </div>
@@ -252,8 +287,7 @@ const CreateInvoiceForm = ({
                   </div>
                   <div className="pl-7 text-sm">
                     <label htmlFor="private-access" className="font-medium text-gray-900">
-                      {' '}
-                      Authorised{' '}
+                      Authorised
                     </label>
                   </div>
                 </div>
@@ -264,12 +298,15 @@ const CreateInvoiceForm = ({
           {/* Line items */}
           <div className="space-y-1 px-4 sm:space-y-0 sm:px-6 sm:py-5">
             <div className="mb-3">
-              <label htmlFor="customer_memo" className="block text-sm font-medium text-gray-900">
+              <label htmlFor="line_items_label" className="block text-sm font-medium text-gray-900">
                 Items
               </label>
 
               {lineItems?.length > 0 && (
-                <LineItems invoice={{ line_items: lineItems }} onRemove={onLineItemRemove} />
+                <LineItems
+                  invoice={{ lineItems: lineItems } as Partial<Invoice>}
+                  onRemove={onLineItemRemove}
+                />
               )}
             </div>
 

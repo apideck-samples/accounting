@@ -1,14 +1,14 @@
 import { Button, useToast } from '@apideck/components'
+import { Menu, Transition } from '@headlessui/react'
 import { Fragment, useState } from 'react'
 import { HiDotsVertical, HiMail, HiPhone } from 'react-icons/hi'
-import { Menu, Transition } from '@headlessui/react'
 
-import type { AccountingCustomer } from '@apideck/node'
+import type { Customer } from '@apideck/unify/models/components'
 import Spinner from 'components/Spinner'
 import { useCustomers } from 'hooks'
 
 interface Props {
-  customer: AccountingCustomer
+  customer: Customer
   onClose: () => void
 }
 
@@ -20,29 +20,24 @@ const CustomerDetails = ({ customer, onClose }: Props) => {
   const onDelete = async (id: string) => {
     setIsLoading(true)
     try {
-      const response = await deleteCustomer(id)
-      if (response?.data) {
-        addToast({
-          title: 'Customer deleted',
-          type: 'success'
-        })
-        setIsLoading(false)
-        onClose()
-      } else {
-        addToast({
-          title: 'Customer failed to delete',
-          type: 'error'
-        })
-      }
+      await deleteCustomer(id)
+      addToast({
+        title: 'Customer deleted',
+        type: 'success'
+      })
+      setIsLoading(false)
+      onClose()
     } catch (error: any) {
       addToast({
-        title: 'Something went wrong',
-        description: error?.message,
+        title: 'Customer failed to delete',
+        description: error?.message || 'An unexpected error occurred',
         type: 'error'
       })
       setIsLoading(false)
     }
   }
+
+  console.log('customer', customer)
 
   return (
     <div className="divide-y divide-gray-200">
@@ -64,7 +59,7 @@ const CustomerDetails = ({ customer, onClose }: Props) => {
             <div>
               <div className="flex items-center">
                 <h3 className="text-xl font-bold text-gray-900 sm:text-2xl">
-                  {customer?.display_name}
+                  {customer?.displayName || customer?.firstName + ' ' + customer?.lastName}
                 </h3>
               </div>
               <p className="text-sm text-gray-500">Customer ID: {customer?.id}</p>
@@ -81,10 +76,10 @@ const CustomerDetails = ({ customer, onClose }: Props) => {
                   </a>
                 </div>
               )}
-              {customer.phone_numbers && customer.phone_numbers?.length > 0 && (
+              {customer.phoneNumbers && customer.phoneNumbers?.length > 0 && (
                 <div className="-ml-px w-0 flex-1 flex">
                   <a
-                    href={`tel:${customer.phone_numbers[0].number}`}
+                    href={`tel:${customer.phoneNumbers[0].number}`}
                     className="relative w-0 flex-1 inline-flex items-center justify-center py-2 text-sm text-gray-700 font-medium border border-gray-300 shadow-sm rounded-md hover:text-gray-500"
                   >
                     <HiPhone className="w-5 h-5 text-gray-400" aria-hidden="true" />
@@ -140,7 +135,7 @@ const CustomerDetails = ({ customer, onClose }: Props) => {
               Emails
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 sm:ml-6">
-              <p>{customer.emails?.map((c: any) => c?.email)?.join(', ')}</p>
+              <p>{customer.emails?.map((c) => c?.email)?.join(', ')}</p>
             </dd>
           </div>
           <div className="sm:flex sm:px-6 sm:py-5">
@@ -148,7 +143,7 @@ const CustomerDetails = ({ customer, onClose }: Props) => {
               Phone numbers
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 sm:ml-6 truncate">
-              <p>{customer.phone_numbers?.map((c: any) => c?.number)?.join(', ')}</p>
+              <p>{customer.phoneNumbers?.map((c) => c?.number)?.join(', ')}</p>
             </dd>
           </div>
           <div className="sm:flex sm:px-6 sm:py-5">
@@ -156,17 +151,29 @@ const CustomerDetails = ({ customer, onClose }: Props) => {
               Status
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 sm:ml-6 capitalize">
-              {customer?.status}
+              {customer?.status?.toString()}
             </dd>
           </div>
-          <div className="sm:flex sm:px-6 sm:py-5">
-            <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0 lg:w-48">
-              Created at
-            </dt>
-            <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 sm:ml-6">
-              {customer.created_at && new Date(customer.created_at).toLocaleDateString()}
-            </dd>
-          </div>
+          {customer.createdAt && (
+            <div className="sm:flex sm:px-6 sm:py-5">
+              <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0 lg:w-48">
+                Created at
+              </dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 sm:ml-6">
+                {customer.createdAt && new Date(customer.createdAt).toLocaleDateString()}
+              </dd>
+            </div>
+          )}
+          {customer.updatedAt && (
+            <div className="sm:flex sm:px-6 sm:py-5">
+              <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0 lg:w-48">
+                Created at
+              </dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 sm:ml-6">
+                {customer.updatedAt && new Date(customer.updatedAt).toLocaleDateString()}
+              </dd>
+            </div>
+          )}
         </dl>
       </div>
     </div>

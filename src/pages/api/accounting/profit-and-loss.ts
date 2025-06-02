@@ -1,33 +1,50 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-
-import type { GetProfitAndLossResponse } from '@apideck/node'
 import { init } from '../_utils'
+// Removed: import type { GetProfitAndLossResponse } from '@apideck/node'
+// Import the specific filter type if needed for explicit typing, though often inferred
+// import { ProfitAndLossFilter } from '@apideck/unify/models/components'
 
 interface Params {
   serviceId?: string
-  cursor?: string
   jwt?: string
-
-  'filter[start_date]'?: string
-  'filter[end_date]'?: string
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { jwt, serviceId }: Params = req.query
-  const start_date = req.query['filter[start_date]'] as string
-  const end_date = req.query['filter[end_date]'] as string
-  const filter = start_date ? { start_date, end_date } : {}
+  const queryStartDate = req.query['filter[start_date]'] as string | undefined
+  const queryEndDate = req.query['filter[end_date]'] as string | undefined
 
-  const apideck = init(jwt as string)
+  if (!jwt) {
+    return res.status(400).json({ message: 'JWT is required' })
+  }
+  if (!serviceId) {
+    return res.status(400).json({ message: 'Service ID is required' })
+  }
+
+  const filter: { startDate?: string; endDate?: string; customerId?: string } = {}
+  if (queryStartDate) {
+    filter.startDate = queryStartDate
+  }
+  if (queryEndDate) {
+    filter.endDate = queryEndDate
+  }
+  // Example if customerId was also a filter option from query:
+  // const queryCustomerId = req.query['filter[customer_id]'] as string | undefined;
+  // if (queryCustomerId) {
+  //   filter.customerId = queryCustomerId;
+  // }
 
   try {
-    const response: GetProfitAndLossResponse = await apideck.accounting.profitAndLossOne({
-      serviceId,
-      filter
+    const apideck = init(jwt as string)
+    const response = await apideck.accounting.profitAndLoss.get({
+      serviceId: serviceId,
+      filter: Object.keys(filter).length > 0 ? filter : undefined
     })
     res.json(response)
-  } catch (error: any) {
-    const response = await error.json()
-    res.status(500).json(response)
+  } catch (error: unknown) {
+    console.error('[API Profit and Loss] Error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+    const errorStatus = (error as any)?.statusCode || 500
+    return res.status(errorStatus).json({ message: errorMessage, error: error })
   }
 }

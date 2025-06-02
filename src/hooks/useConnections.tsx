@@ -1,16 +1,16 @@
 import { Dispatch, ReactNode, createContext, useContext, useEffect } from 'react'
 
-import { Connection } from '@apideck/node'
-import { useCookieState } from './useCookieState'
+import { Connection } from '@apideck/unify/models/components'
+import { useSession } from 'hooks'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
-import { useSession } from 'hooks'
+import { useCookieState } from './useCookieState'
 
 interface ContextProps {
   setConnectionId: Dispatch<string>
   connectionId?: string | null
-  connections: Connection[]
-  connection: Connection | null
+  connections: Connection[] | undefined
+  connection: Connection | null | undefined
   isLoading: boolean
 }
 
@@ -27,6 +27,10 @@ export const ConnectionsProvider = ({ children }: { children: ReactNode }) => {
 
   const getConnections = async (url: string) => {
     const response = await fetch(url)
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: response.statusText }))
+      throw new Error(errorData.message || `API request failed with status ${response.status}`)
+    }
     return await response.json()
   }
 
@@ -35,20 +39,26 @@ export const ConnectionsProvider = ({ children }: { children: ReactNode }) => {
     getConnections
   )
 
+  console.log('data from /api/vault/connections:', data)
+  if (error) {
+    console.error('Error fetching connections:', error)
+  }
+
   const isLoading = !!(session?.jwt && !data && !error)
-  const connections = data?.data
+  const connections = data?.getConnectionsResponse?.data as Connection[] | undefined
   const connection = connections?.find((c: Connection) => c.id === connectionId)
-  const callableConnections = connections?.filter(
-    (connection: Connection) => connection.state === 'callable'
-  )
+  const callableConnections = connections?.filter((c: Connection) => c.state === 'callable')
 
   useEffect(() => {
     if (!connectionId && callableConnections?.length) {
-      setConnectionId(callableConnections[0].id)
+      setConnectionId(callableConnections[0].id as string)
     }
   }, [setConnectionId, callableConnections, connectionId])
 
-  if (!data?.data && error && pathname !== '/invalid-session') push('/invalid-session')
+  if (error && !data && pathname !== '/invalid-session') {
+    console.error('Redirecting to /invalid-session due to SWR error:', error)
+    push('/invalid-session')
+  }
 
   return (
     <ConnectorContext.Provider value={{ setConnectionId, connection, isLoading, connections }}>

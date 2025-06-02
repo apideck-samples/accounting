@@ -1,76 +1,155 @@
+import { useEffect, useMemo, useState } from 'react'
 import { fetcher, multiFetcher } from 'utils'
-import { useMemo, useState } from 'react'
 
-import { useConnections } from './useConnections'
+import type { ProfitAndLoss } from '@apideck/unify/models/components'
 import useSWR from 'swr'
+import { useConnections } from './useConnections'
 import { useSession } from './useSession'
+
+// Helper to get YYYY-MM-DD string in local timezone
+const toYYYYMMDD = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = (date.getMonth() + 1).toString().padStart(2, '0') // getMonth is 0-indexed
+  const day = date.getDate().toString().padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
 export const useProfitAndLoss = () => {
   const { connection } = useConnections()
   const { session } = useSession()
 
-  const [startDate, setStartDate] = useState(null)
-  const [endDate, setEndDate] = useState(null)
-  const serviceId = connection?.service_id || ''
+  const today = new Date()
+  const firstDayDefaultMonthStr = toYYYYMMDD(new Date(today.getFullYear(), 4, 1))
+  const lastDayDefaultMonthStr = toYYYYMMDD(new Date(today.getFullYear(), 5, 0))
+
+  const [startDate, setStartDate] = useState<string | null>(firstDayDefaultMonthStr)
+  const [endDate, setEndDate] = useState<string | null>(lastDayDefaultMonthStr)
+  const serviceId = connection?.serviceId || ''
 
   const profitAndLossUrl = useMemo(() => {
-    if (!serviceId) return null
-    let url = `/api/accounting/profit-and-loss?jwt=${session?.jwt}&serviceId=${serviceId}`
-    if (startDate && endDate) {
-      url += `&filter[start_date]=${startDate}&filter[end_date]=${endDate}`
+    if (!serviceId || !session?.jwt) {
+      return null
     }
-    return url
+
+    if (startDate && endDate) {
+      const d1 = new Date(startDate)
+      const d2 = new Date(endDate)
+      if (d1 <= d2) {
+        let url = `/api/accounting/profit-and-loss?jwt=${session.jwt}&serviceId=${serviceId}`
+        url += `&filter[start_date]=${startDate}&filter[end_date]=${endDate}`
+        return url
+      } else {
+        return null // Invalid date range
+      }
+    } else if (startDate || endDate) {
+      return null // Incomplete date range
+    } else {
+      return null // Both dates null
+    }
   }, [endDate, serviceId, session?.jwt, startDate])
 
-  const { data, error, mutate } = useSWR(profitAndLossUrl, fetcher)
+  const {
+    data: singleReportData,
+    error: singleReportError,
+    mutate
+  } = useSWR(profitAndLossUrl, fetcher)
 
-  const getFirstDayOfMonth = (year: number, month: number) => {
-    return new Date(year, month, 1)
-  }
-
-  const getLastNMonths = (n = 7) => {
-    const date = new Date()
-    const firstDayCurrentMonth = getFirstDayOfMonth(date.getFullYear(), date.getMonth())
-    const currentMonth = date.getMonth()
-
-    const result = []
-    for (let i = n; i > 0; i--) {
-      firstDayCurrentMonth.setMonth(currentMonth - i)
-
-      result.push(firstDayCurrentMonth.toISOString().substring(0, 10))
+  const getUrlsForMonthlyReports = (): string[] | null => {
+    if (!serviceId || !session?.jwt) {
+      return null
     }
-    return result
-  }
 
-  const getUrls = () => {
-    const months = getLastNMonths()
-    return months
-      .map(
-        (month, i) =>
-          months[i - 1] &&
-          `/api/accounting/profit-and-loss?jwt=${
-            session?.jwt
-          }&serviceId=${serviceId}&filter[start_date]=${months[i - 1]}&filter[end_date]=${month}`
+    const reportUrls: string[] = []
+    const currentDate = new Date()
+
+    for (let i = 0; i < 7; i++) {
+      const firstDayOfTargetMonth = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() - i,
+        1
       )
+      const reportStartDate = toYYYYMMDD(firstDayOfTargetMonth)
 
-      ?.filter(Boolean)
+      const lastDayOfTargetMonth = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() - i + 1,
+        0
+      )
+      const reportEndDate = toYYYYMMDD(lastDayOfTargetMonth)
+
+      if (new Date(reportStartDate) > new Date(reportEndDate)) {
+        console.error(
+          // This is a critical internal logic error, not a diagnostic log.
+          `[useProfitAndLoss] FATAL MONTHLY DATE LOGIC ERROR IN LOOP: ${reportStartDate} > ${reportEndDate}`
+        )
+        continue
+      }
+
+      reportUrls.push(
+        `/api/accounting/profit-and-loss?jwt=${session.jwt}&serviceId=${serviceId}&filter[start_date]=${reportStartDate}&filter[end_date]=${reportEndDate}`
+      )
+    }
+    const finalUrls = reportUrls.reverse()
+    return finalUrls
   }
 
-  const { data: lastSixMonths } = useSWR(connection ? getUrls : null, multiFetcher)
+  const { data: multiMonthData, error: multiMonthError } = useSWR(
+    getUrlsForMonthlyReports,
+    multiFetcher
+  )
+
+  const extractedSingleReport = singleReportData?.getProfitAndLossResponse?.data as
+    | ProfitAndLoss
+    | undefined
+  const extractedMonthlyReports = multiMonthData
+    ?.map((response: any) => response?.getProfitAndLossResponse?.data)
+    .filter(Boolean) as ProfitAndLoss[] | undefined
+
+  const isLoadingSingle = !singleReportError && !singleReportData && !!profitAndLossUrl
+  const isLoadingMonthly = !multiMonthError && !multiMonthData && !!getUrlsForMonthlyReports()
+
+  useEffect(() => {
+    if (singleReportError) {
+      console.error('[useProfitAndLoss] Error fetching single report:', singleReportError)
+    }
+    if (multiMonthError) {
+      console.error(
+        '[useProfitAndLoss] Error fetching monthly reports (multiFetcher error):',
+        multiMonthError
+      )
+      if (Array.isArray(multiMonthError)) {
+        multiMonthError.forEach((err, index) => {
+          if (err) console.error(`[useProfitAndLoss] Error for monthly report ${index}:`, err)
+        })
+      }
+    }
+  }, [singleReportError, multiMonthError])
 
   return useMemo(
     () => ({
-      profitAndLoss: data?.data,
-      filteredData: startDate && endDate && data?.data,
+      profitAndLoss: extractedSingleReport,
+      filteredData: startDate && endDate && extractedSingleReport,
       startDate,
       endDate,
       setStartDate,
       setEndDate,
       mutate,
-      isLoading: !error && !data,
-      isError: data?.error || error,
-      lastSixMonths: lastSixMonths?.map((response) => response.data)?.filter(Boolean)
+      isLoading: isLoadingSingle || isLoadingMonthly,
+      isError: singleReportError || multiMonthError || singleReportData?.message,
+      lastSixMonths: extractedMonthlyReports
     }),
-    [data, endDate, error, lastSixMonths, mutate, startDate]
+    [
+      extractedSingleReport,
+      startDate,
+      endDate,
+      mutate,
+      isLoadingSingle,
+      isLoadingMonthly,
+      singleReportError,
+      multiMonthError,
+      singleReportData,
+      multiMonthData,
+      extractedMonthlyReports
+    ]
   )
 }

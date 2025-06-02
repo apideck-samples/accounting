@@ -1,7 +1,7 @@
 import { Menu, Transition } from '@headlessui/react'
 import { useConnections, useSession } from 'hooks'
 
-import { Connection } from '@apideck/node'
+import { Connection } from '@apideck/unify/models/components'
 import { ApideckVault } from '@apideck/vault-js'
 import { useEffect, useState } from 'react'
 import Spinner from './Spinner'
@@ -29,7 +29,7 @@ const SelectConnection = () => {
     if (connection.state === 'callable') {
       setConnectionId(connection.id as string)
     } else {
-      setServiceId(connection.service_id as string)
+      setServiceId(connection.serviceId as string)
     }
   }
 
@@ -53,7 +53,7 @@ const SelectConnection = () => {
                         isLoading ? 'animate-spin opacity-20' : ''
                       }`}
                       src={!isLoading && connection?.icon ? connection?.icon : '/img/logo.png'}
-                      alt={connection.name}
+                      alt={connection.name || 'Service Icon'}
                       height={28}
                       width={28}
                     />
@@ -85,36 +85,34 @@ const SelectConnection = () => {
                 className="absolute custom-scrollbar-dark right-0 z-10 w-full mt-2 origin-top-right backdrop-blur-md bg-ui-500/40 border divide-y rounded-md outline-none border-ui-500 divide-ui-500"
               >
                 <div className="py-1">
-                  {connections?.map((connection: Connection, i: number) => {
+                  {connections?.map((connectionItem: Connection, i: number) => {
                     return (
                       <Menu.Item key={i}>
                         {({ active }: { active: boolean }) => (
                           <div
-                            onClick={() => selectConnection(connection)}
+                            onClick={() => selectConnection(connectionItem)}
                             className={`${
                               active ? 'backdrop-blur-lg bg-ui-500/50 transition' : 'bg-none'
                             } flex items-center justify-between min-w-0 px-2 cursor-pointer py-0.5 overflow-hidden ${
-                              connection.enabled ? '' : 'opacity-60'
+                              connectionItem.enabled ? '' : 'opacity-60'
                             }`}
                           >
                             <div className="flex p-2">
                               <img
                                 className="rounded-full ring-ui-400 ring-2"
-                                src={connection.icon}
-                                alt={connection.name}
+                                src={connectionItem.icon}
+                                alt={connectionItem.name || 'Service Icon'}
                                 height={28}
                                 width={28}
                               />
                             </div>
-                            <span className="flex-1 min-w-0">
-                              <span className="text-sm ml-1 text-white truncate">
-                                {connection.name}
-                              </span>
+                            <span className="flex-1 min-w-0 text-sm ml-1 text-white truncate pr-1">
+                              {connectionItem.name}
                             </span>
 
                             <span
                               className={`inline-block w-2.5 h-2.5 mr-2 rounded-full ${statusColor(
-                                connection
+                                connectionItem
                               )}`}
                             ></span>
                           </div>

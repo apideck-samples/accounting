@@ -12,8 +12,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { jwt, serviceId }: Params = req.query
   const apideck = init(jwt as string)
 
-  const result = await apideck.accounting
-    .invoicesDelete({ serviceId, id })
+  const result = await apideck.accounting.invoices
+    .delete({ serviceId, id })
     .catch(async (error: Response) => await error.json())
   res.json(result)
 }

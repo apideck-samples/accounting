@@ -1,10 +1,11 @@
 import { AiFillPieChart, AiOutlineAreaChart, AiOutlineUsergroupAdd } from 'react-icons/ai'
 
-import { ProfitAndLoss } from '@apideck/node'
+// import { ProfitAndLoss } from '@apideck/node' // Old import
+import type { ProfitAndLoss } from '@apideck/unify/models/components' // New import
 import StatCard from 'components/StatCard'
 
 interface Props {
-  profitAndLoss: ProfitAndLoss
+  profitAndLoss: ProfitAndLoss | undefined // Allow undefined as it comes from hook
   isLoading: boolean
 }
 
@@ -13,21 +14,22 @@ const ProfitAndLossStats = ({ profitAndLoss, isLoading }: Props) => {
     {
       name: 'Income',
       icon: <AiFillPieChart className="h-6 w-6 text-gray-400" aria-hidden="true" />,
-      amount: `${profitAndLoss?.income?.total?.toLocaleString() ?? 0}`,
+      amount: `${profitAndLoss?.income?.total?.toLocaleString() ?? '0'}`,
       href: '#',
       linkText: 'View income'
     },
     {
       name: 'Expenses',
       icon: <AiOutlineUsergroupAdd className="h-6 w-6 text-gray-400" aria-hidden="true" />,
-      amount: `${profitAndLoss?.expenses?.total?.toLocaleString() ?? 0}`,
+      amount: `${profitAndLoss?.expenses?.total?.toLocaleString() ?? '0'}`,
       href: '#',
       linkText: 'View expenses'
     },
     {
       name: 'Gross Profit',
       icon: <AiOutlineAreaChart className="h-6 w-6 text-gray-400" aria-hidden="true" />,
-      amount: `${profitAndLoss?.gross_profit?.total?.toLocaleString() ?? 0}`,
+      // Corrected to use grossProfit.total
+      amount: `${profitAndLoss?.grossProfit?.total?.toLocaleString() ?? '0'}`,
       href: '#',
       linkText: 'View profit'
     }

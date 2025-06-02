@@ -2,7 +2,7 @@ import { Button, Chip } from '@apideck/components'
 import { useInvoices, useSession } from 'hooks'
 import { HiExclamation, HiOutlineDocumentSearch } from 'react-icons/hi'
 
-import type { Invoice } from '@apideck/node'
+import type { Invoice } from '@apideck/unify/models/components'
 import { ApideckVault } from '@apideck/vault-js'
 import SlideOver from 'components/SlideOver'
 import { useEffect, useState } from 'react'
@@ -28,6 +28,10 @@ const InvoicesTable = () => {
     }
   }, [vaultOpen, session])
 
+  const createdOrUpdatedAtText =
+    invoices && invoices.length > 0 && invoices[0]?.createdAt ? 'Created at' : 'Updated at'
+  const showStatusColumn = invoices && invoices.length > 0 && invoices[0]?.status
+
   return (
     <div className="sm:px-4 md:px-0">
       <div className="-mx-4 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:-mx-6 md:mx-0 sm:rounded-lg fade-up">
@@ -51,7 +55,7 @@ const InvoicesTable = () => {
                 <span className="whitespace-nowrap">Customer Memo</span>
               </th>
               <th scope="col" className="px-3 py-3.5 text-left text-sm font-medium text-gray-900">
-                {invoices?.length > 0 && invoices[0].created_at ? 'Created at' : 'Updated at'}
+                {createdOrUpdatedAtText}
               </th>
               <th scope="col" className="px-3 py-3.5 text-left text-sm font-medium text-gray-900">
                 Due Date
@@ -59,7 +63,7 @@ const InvoicesTable = () => {
               <th scope="col" className="px-3 py-3.5 text-left text-sm font-medium text-gray-900">
                 Total
               </th>
-              {invoices?.length > 0 && invoices[0].status && (
+              {showStatusColumn && (
                 <th
                   scope="col"
                   className="px-3 py-3.5 text-left text-sm font-medium text-gray-900 "
@@ -70,9 +74,10 @@ const InvoicesTable = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
-            {invoices?.map((invoice: any) => {
-              const currency = invoice?.currency || 'USD'
-              const createdOrUpdatedAt = invoice.created_at || invoice.updated_at
+            {invoices?.map((invoice: Invoice) => {
+              const currency = invoice?.currency?.toString() || 'USD'
+              const createdOrUpdatedAtValue = invoice.createdAt || invoice.updatedAt
+              const dueDateValue = invoice.dueDate
 
               return (
                 <tr
@@ -87,31 +92,35 @@ const InvoicesTable = () => {
                   <td className="w-full max-w-0 py-4 pl-4 pr-3 text-sm  text-gray-900 sm:w-auto sm:max-w-none sm:pl-6">
                     <div className="flex-1 truncate hidden sm:block">
                       <h3 className="text-gray-800 text-sm truncate text-left">
-                        {invoice.customer?.display_name || invoice.customer?.display_id}
+                        {invoice.customer?.displayName || invoice.customer?.displayId}
                       </h3>
                     </div>
                   </td>
                   <td className="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell truncate max-w-xs">
-                    {invoice.customer_memo}
+                    {invoice.customerMemo}
                   </td>
                   <td className="px-3 py-4 text-sm truncate">
                     <div className=" text-gray-800">
-                      {new Date(createdOrUpdatedAt).toLocaleDateString()}
+                      {createdOrUpdatedAtValue &&
+                        new Date(createdOrUpdatedAtValue).toLocaleDateString()}
                     </div>
                     <div className="text-gray-500">
-                      {new Date(createdOrUpdatedAt).toLocaleTimeString()}
+                      {createdOrUpdatedAtValue &&
+                        new Date(createdOrUpdatedAtValue).toLocaleTimeString()}
                     </div>
                   </td>
                   <td className="px-3 py-4 text-sm truncate">
                     <div className=" text-gray-800">
-                      {new Date(invoice.due_date).toLocaleDateString()}
+                      {dueDateValue &&
+                        new Date(dueDateValue as unknown as string).toLocaleDateString()}
                     </div>
                   </td>
                   <td className="px-3 py-4 font-medium text-gray-900  min-w-md">
-                    {new Intl.NumberFormat(currency, {
-                      style: 'currency',
-                      currency: currency
-                    }).format(invoice.total)}
+                    {invoice.total &&
+                      new Intl.NumberFormat(currency, {
+                        style: 'currency',
+                        currency: currency
+                      }).format(invoice.total)}
                   </td>
                   {invoice.status && (
                     <td className="px-3 py-4 text-sm text-gray-500 truncate">
@@ -120,11 +129,11 @@ const InvoicesTable = () => {
                           size="small"
                           className="uppercase"
                           colorClassName={
-                            invoice.status === 'submitted'
+                            invoice.status.toString() === 'submitted'
                               ? 'bg-green-100 text-primary-800'
                               : 'bg-red-100 text-red-800'
                           }
-                          label={invoice.status}
+                          label={invoice.status.toString()}
                         />
                       </span>
                     </td>
@@ -141,7 +150,7 @@ const InvoicesTable = () => {
         </table>
 
         {/* Empty State */}
-        {invoices?.length === 0 && !isLoading && (
+        {invoices && invoices.length === 0 && !isLoading && (
           <div
             className="text-center bg-white py-10 px-6 rounded fade-in"
             data-testid="empty-state"
@@ -157,8 +166,10 @@ const InvoicesTable = () => {
             data-testid="empty-state"
           >
             <HiExclamation className="mx-auto h-10 w-10 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">{JSON.stringify(error)}</h3>
-            {error === 'Unauthorized' && (
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
+              {(error as any)?.message || JSON.stringify(error)}
+            </h3>
+            {(error as any)?.message === 'Unauthorized' && (
               <>
                 <p className="mt-1 mb-3">Please first connect with at least one service</p>
                 <Button text="Authorize integration" onClick={() => setVaultOpen(true)} />
@@ -168,7 +179,7 @@ const InvoicesTable = () => {
         )}
 
         {/* Pagination */}
-        {(invoices?.length > 0 || isLoading) && (
+        {((invoices && invoices.length > 0) || isLoading) && (
           <div className="flex flex-row-reverse py-4 border-gray-200 px-4 border-t">
             {hasNextPage && (
               <Button onClick={nextPage} text="Next" className="ml-2" isLoading={isLoading} />

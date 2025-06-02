@@ -1,31 +1,56 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-
-import type { GetBalanceSheetResponse } from '@apideck/node'
 import { init } from '../_utils'
+// Removed: import type { GetBalanceSheetResponse } from '@apideck/node'
+// Import BalanceSheetFilter if explicit typing is desired
+// import { BalanceSheetFilter } from '@apideck/unify/models/components';
 
 interface Params {
   serviceId?: string
-  cursor?: string
   jwt?: string
+  // Add other potential query params for filtering if needed
+  // e.g., 'filter[end_date]'?: string;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { jwt, serviceId }: Params = req.query
-  // const filter = {
-  //   start_date: req.query['filter[start_date'] as string,
-  //   end_date: req.query['filter[end_date'] as string
+  const queryEndDate = req.query['filter[end_date]'] as string | undefined
+  // Add other filter param parsers here, e.g.:
+  // const queryStartDate = req.query['filter[start_date]'] as string | undefined;
+  // const queryPeriodCount = req.query['filter[period_count]'] as string | undefined;
+  // const queryPeriodType = req.query['filter[period_type]'] as string | undefined;
+
+  if (!jwt) {
+    return res.status(400).json({ message: 'JWT is required' })
+  }
+  if (!serviceId) {
+    return res.status(400).json({ message: 'Service ID is required' })
+  }
+
+  const filter: { endDate?: string } = {}
+  if (queryEndDate) {
+    filter.endDate = queryEndDate
+  }
+  // if (queryStartDate) { // startDate is deprecated but example of use
+  //   filter.startDate = queryStartDate;
+  // }
+  // if (queryPeriodCount) {
+  //  filter.periodCount = parseInt(queryPeriodCount, 10); // Ensure it's a number
+  // }
+  // if (queryPeriodType) {
+  //  filter.periodType = queryPeriodType; // Ensure it matches PeriodType enum values
   // }
 
-  const apideck = init(jwt as string)
-
   try {
-    const response: GetBalanceSheetResponse = await apideck.accounting.balanceSheetOne({
-      serviceId
-      // filter
+    const apideck = init(jwt as string)
+    const response = await apideck.accounting.balanceSheet.get({
+      serviceId: serviceId,
+      filter: Object.keys(filter).length > 0 ? filter : undefined
     })
     res.json(response)
-  } catch (error: any) {
-    const response = await error.json()
-    res.status(500).json(response)
+  } catch (error: unknown) {
+    console.error('[API Balance Sheet] Error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+    const errorStatus = (error as any)?.statusCode || 500
+    return res.status(errorStatus).json({ message: errorMessage, error: error })
   }
 }

@@ -1,11 +1,11 @@
 import { Button, useToast } from '@apideck/components'
-import { Fragment, useState } from 'react'
-import type { Invoice, InvoiceLineItem } from '@apideck/node'
+import type { Invoice, InvoiceLineItem } from '@apideck/unify/models/components'
 import { Menu, Transition } from '@headlessui/react'
+import { Fragment, useState } from 'react'
 
-import { HiDotsVertical } from 'react-icons/hi'
 import Spinner from 'components/Spinner'
 import { useInvoices } from 'hooks'
+import { HiDotsVertical } from 'react-icons/hi'
 
 interface Props {
   invoice: Invoice
@@ -13,7 +13,7 @@ interface Props {
 }
 
 const InvoiceDetails = ({ invoice, onClose }: Props) => {
-  const currency = invoice?.currency || 'USD'
+  const currency = invoice?.currency?.toString() || 'USD'
   const { deleteInvoice } = useInvoices()
   const [isLoading, setIsLoading] = useState(false)
   const { addToast } = useToast()
@@ -21,24 +21,17 @@ const InvoiceDetails = ({ invoice, onClose }: Props) => {
   const onDelete = async (id: string) => {
     setIsLoading(true)
     try {
-      const response = await deleteInvoice(id)
-      if (response?.data) {
-        addToast({
-          title: 'Invoice deleted',
-          type: 'success'
-        })
-        setIsLoading(false)
-        onClose()
-      } else {
-        addToast({
-          title: 'Invoice failed to delete',
-          type: 'error'
-        })
-      }
+      await deleteInvoice(id)
+      addToast({
+        title: 'Invoice deleted',
+        type: 'success'
+      })
+      setIsLoading(false)
+      onClose()
     } catch (error: any) {
       addToast({
-        title: 'Something went wrong',
-        description: error?.message,
+        title: 'Invoice failed to delete',
+        description: error?.message || 'An unexpected error occurred',
         type: 'error'
       })
       setIsLoading(false)
@@ -65,7 +58,7 @@ const InvoiceDetails = ({ invoice, onClose }: Props) => {
             <div>
               <div className="flex items-center">
                 <h3 className="text-xl font-bold text-gray-900 sm:text-2xl">
-                  {invoice.customer?.display_name}
+                  {invoice.customer?.displayName}
                 </h3>
               </div>
               <p className="text-sm text-gray-500">Customer ID: {invoice.customer?.id}</p>
@@ -131,7 +124,7 @@ const InvoiceDetails = ({ invoice, onClose }: Props) => {
               Customer Memo
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 sm:ml-6">
-              <p>{invoice.customer_memo}</p>
+              <p>{invoice.customerMemo}</p>
             </dd>
           </div>
           <div className="sm:flex sm:px-6 sm:py-5">
@@ -139,7 +132,7 @@ const InvoiceDetails = ({ invoice, onClose }: Props) => {
               Address
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 sm:ml-6 truncate">
-              <p>{invoice.billing_address?.string}</p>
+              <p>{invoice.billingAddress?.string || 'N/A'}</p>
             </dd>
           </div>
           <div className="sm:flex sm:px-6 sm:py-5">
@@ -160,7 +153,8 @@ const InvoiceDetails = ({ invoice, onClose }: Props) => {
               Due date
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 sm:ml-6">
-              {invoice.due_date && new Date(invoice.due_date).toLocaleDateString()}
+              {invoice.dueDate &&
+                new Date(invoice.dueDate as unknown as string).toLocaleDateString()}
             </dd>
           </div>
           <div className="sm:flex sm:py-5">
@@ -218,7 +212,7 @@ const InvoiceDetails = ({ invoice, onClose }: Props) => {
                           </tr>
                         </thead>
                         <tbody className=" bg-white">
-                          {invoice.line_items?.map((lineItem: InvoiceLineItem) => {
+                          {invoice.lineItems?.map((lineItem: InvoiceLineItem) => {
                             if (lineItem.type !== 'sales_item') {
                               const label =
                                 lineItem.type === 'discount'
@@ -240,15 +234,15 @@ const InvoiceDetails = ({ invoice, onClose }: Props) => {
                                     {new Intl.NumberFormat(currency, {
                                       style: 'currency',
                                       currency: currency
-                                    }).format(lineItem?.total_amount as any)}
+                                    }).format(lineItem?.totalAmount as number)}
                                   </td>
                                 </tr>
                               )
                             }
 
                             const pricePerUnit =
-                              lineItem?.unit_price ||
-                              (lineItem?.quantity === 1 ? lineItem?.total_amount : '')
+                              lineItem?.unitPrice ||
+                              (lineItem?.quantity === 1 ? lineItem?.totalAmount : undefined)
                             return (
                               <tr key={lineItem.id} className="border-b border-gray-200">
                                 <td className="whitespace-nowrap py-2 pl-4 pr-3 text-sm text-gray-500 sm:pl-6">
@@ -268,17 +262,17 @@ const InvoiceDetails = ({ invoice, onClose }: Props) => {
                                     }).format(pricePerUnit)}
                                 </td>
                                 <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-700">
-                                  {lineItem?.total_amount &&
+                                  {lineItem?.totalAmount &&
                                     new Intl.NumberFormat(currency, {
                                       style: 'currency',
                                       currency: currency
-                                    }).format(lineItem?.total_amount)}
+                                    }).format(lineItem?.totalAmount)}
                                 </td>
                               </tr>
                             )
                           })}
 
-                          {invoice.total_tax !== undefined && invoice.total_tax !== null && (
+                          {invoice.totalTax !== undefined && invoice.totalTax !== null && (
                             <tr className=" bg-gray-50">
                               <td className="whitespace-nowrap pb-2 pl-4 pr-3 text-sm text-gray-500 sm:pl-6"></td>
                               <td className="whitespace-nowrap px-2 pb-2 text-sm font-medium text-gray-900"></td>
@@ -290,7 +284,7 @@ const InvoiceDetails = ({ invoice, onClose }: Props) => {
                                 {new Intl.NumberFormat(currency, {
                                   style: 'currency',
                                   currency: currency
-                                }).format(invoice.total_tax)}
+                                }).format(invoice.totalTax)}
                               </td>
                             </tr>
                           )}

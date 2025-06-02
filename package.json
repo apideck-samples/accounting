@@ -18,6 +18,7 @@
     "@apideck/components": "^0.11.3",
     "@apideck/node": "^2.2.0",
     "@apideck/react-vault": "^0.2.10",
+    "@apideck/unify": "^0.24.0",
     "@apideck/vault-js": "^1.7.0",
     "camelcase-keys-deep": "^0.1.0",
     "cookie": "^0.5.0",

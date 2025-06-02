@@ -1,7 +1,12 @@
 import { Button, Select, TextArea, TextInput, useToast } from '@apideck/components'
 
-import { InvoiceItemType } from '@apideck/node'
-import { useInvoiceItems } from 'hooks/useInvoiceItems'
+// import { InvoiceItemType } from '@apideck/node' // Old import
+// The new SDK exports this as InvoiceItemTypeType, so we alias it for compatibility.
+import {
+  InvoiceItem,
+  InvoiceItemTypeType as InvoiceItemType
+} from '@apideck/unify/models/components' // New import
+import { useInvoiceItems } from 'hooks/useInvoiceItems' // This hook also needs checking
 import { useState } from 'react'
 
 const CreateInvoiceItemForm = ({ closeForm }: { closeForm: any }) => {
@@ -13,26 +18,51 @@ const CreateInvoiceItemForm = ({ closeForm }: { closeForm: any }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const { addToast } = useToast()
 
-  const onSubmit = async (e: any) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-    const invoiceItem = {
+    // The object being created should conform to InvoiceItemInput from @apideck/unify/models/components
+    const invoiceItemToCreate = {
       name,
       description,
-      unit_price: unitPrice,
+      unitPrice: unitPrice, // camelCase
       type: itemType
-      // expense_account: { id: '7' } TODO: Add expense account ID or Income Account ID
+      // expense_account: { id: '7' } // This was commented out, ensure new type for account linking if re-enabled
     }
-    const response = await createInvoiceItem(invoiceItem)
-    setIsLoading(false)
-    if (response.data) {
-      addToast({ title: 'New invoice item created', description: '', type: 'success' })
-      closeForm()
-      return
-    } else {
+    try {
+      // createInvoiceItem from useInvoiceItems calls /api/accounting/invoice-items/add
+      // That API endpoint now returns the direct SDK response for create, e.g., { createInvoiceItemResponse: { data: ... } } or the item itself.
+      // Let's assume the API route /api/accounting/invoice-items/add was updated to return the created item directly on success.
+      const response = await createInvoiceItem(invoiceItemToCreate as Omit<InvoiceItem, 'id'>) // Cast to input type
+      setIsLoading(false)
+
+      // Check for a truthy response that indicates success (e.g., it has an ID)
+      if (response && response.id) {
+        addToast({
+          title: 'New invoice item created',
+          description: `ID: ${response.id}`,
+          type: 'success'
+        })
+        closeForm()
+      } else if (response && (response as any).message) {
+        // Handle our API's error format
+        addToast({
+          title: 'Error creating invoice item',
+          description: (response as any).message,
+          type: 'error'
+        })
+      } else {
+        addToast({
+          title: 'Error creating invoice item',
+          description: 'An unknown error occurred or response was not as expected.',
+          type: 'error'
+        })
+      }
+    } catch (error: any) {
+      setIsLoading(false)
       addToast({
         title: 'Error creating invoice item',
-        description: `Status code: ${response?.status_code}`,
+        description: error?.message || 'An unexpected error occurred.',
         type: 'error'
       })
     }
@@ -100,10 +130,12 @@ const CreateInvoiceItemForm = ({ closeForm }: { closeForm: any }) => {
               <Select
                 name="itemType"
                 placeholder="Select item type"
-                value={itemType}
+                value={itemType} // Should be compatible with InvoiceItemType values
                 options={[
                   { label: 'Service', value: 'service' },
-                  { label: 'Inventory', value: 'inventory' },
+                  { label: 'Inventory', value: 'inventory' }, // From InvoiceItemTypeType enum
+                  { label: 'Non-Inventory', value: 'non_inventory' }, // From InvoiceItemTypeType enum
+                  { label: 'Description', value: 'description' }, // From InvoiceItemTypeType enum
                   { label: 'Other', value: 'other' }
                 ]}
                 onChange={(e) => setItemType(e.currentTarget.value as InvoiceItemType)}

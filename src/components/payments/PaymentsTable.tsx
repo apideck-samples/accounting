@@ -1,8 +1,9 @@
 import { Button } from '@apideck/components'
 import { HiOutlineDocumentSearch } from 'react-icons/hi'
-import { Payment } from '@apideck/node'
-import PaymentsTableLoadingRow from './PaymentsTableLoadingRow'
+// import { Payment } from '@apideck/node' // Old import
+import type { Payment } from '@apideck/unify/models/components' // New import
 import { usePayments } from 'hooks/usePayments'
+import PaymentsTableLoadingRow from './PaymentsTableLoadingRow'
 
 const PaymentsTable = () => {
   const { payments, isLoading, hasNextPage, hasPrevPage, nextPage, prevPage } = usePayments()
@@ -30,12 +31,6 @@ const PaymentsTable = () => {
                 scope="col"
                 className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
               >
-                Payment Method
-              </th>
-              <th
-                scope="col"
-                className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
-              >
                 Reference
               </th>
               <th
@@ -44,7 +39,8 @@ const PaymentsTable = () => {
               >
                 Transaction Date
               </th>
-              {payments && payments[0]?.status && (
+              {/* Check for status property existence more safely */}
+              {payments && payments.length > 0 && payments[0]?.status !== undefined && (
                 <th
                   scope="col"
                   className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
@@ -62,7 +58,7 @@ const PaymentsTable = () => {
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
             {payments?.map((payment: Payment) => {
-              const currency = payment.currency ?? 'USD'
+              const currency = payment.currency?.toString() ?? 'USD' // Ensure currency is string
 
               return (
                 <tr key={payment.id}>
@@ -70,28 +66,33 @@ const PaymentsTable = () => {
                     {payment?.id}
                   </td>
                   <td className="whitespace-nowrap px-2 py-2 text-sm font-medium text-gray-900">
-                    {payment?.customer?.company_name || payment?.customer?.id}
-                  </td>
-                  <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-900">
-                    {payment?.payment_method_reference}
+                    {/* Use camelCase for customer properties */}
+                    {payment?.customer?.companyName ||
+                      payment?.customer?.displayName ||
+                      payment?.customer?.id}
                   </td>
                   <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500">
                     {payment?.reference}
                   </td>
                   <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500">
-                    {payment?.transaction_date &&
-                      new Date(payment?.transaction_date).toLocaleDateString()}
+                    {/* Use camelCase: transactionDate (it's a Date object) */}
+                    {payment?.transactionDate &&
+                      new Date(payment.transactionDate).toLocaleDateString()}
                   </td>
-                  {payment.status && (
+                  {/* Ensure status is checked before rendering the cell */}
+                  {payment.status !== undefined && (
                     <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 capitalize">
-                      {payment?.status}
+                      {payment?.status?.toString()} {/* status is an enum, convert to string */}
                     </td>
                   )}
                   <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500">
-                    {new Intl.NumberFormat(currency, {
-                      style: 'currency',
-                      currency: currency
-                    }).format(payment?.total_amount as any)}
+                    {/* Use camelCase: totalAmount */}
+                    {payment?.totalAmount !== null &&
+                      payment?.totalAmount !== undefined &&
+                      new Intl.NumberFormat(currency, {
+                        style: 'currency',
+                        currency: currency
+                      }).format(payment?.totalAmount)}
                   </td>
                 </tr>
               )
@@ -103,8 +104,8 @@ const PaymentsTable = () => {
           </tbody>
         </table>
 
-        {/* Empty State */}
-        {payments?.length === 0 && !isLoading && (
+        {/* Ensure payments is checked before accessing length */}
+        {payments && payments.length === 0 && !isLoading && (
           <div
             className="text-center bg-white py-10 px-6 rounded fade-in"
             data-testid="empty-state"
@@ -114,8 +115,8 @@ const PaymentsTable = () => {
           </div>
         )}
 
-        {/* Pagination */}
-        {(payments?.length > 0 || isLoading) && (
+        {/* Ensure payments is checked before accessing length */}
+        {((payments && payments.length > 0) || isLoading) && (
           <div className="flex flex-row-reverse py-4 border-gray-200 px-4 border-t">
             {hasNextPage && (
               <Button onClick={nextPage} text="Next" className="ml-2" isLoading={isLoading} />

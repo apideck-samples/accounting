@@ -1,12 +1,12 @@
-import { Invoice, InvoiceLineItem } from '@apideck/node'
+import type { Invoice, InvoiceLineItem } from '@apideck/unify/models/components'
 
 interface Props {
-  invoice: Invoice
+  invoice: Partial<Invoice>
   onRemove?: (LineItem: InvoiceLineItem) => void
 }
 
 const LineItems = ({ invoice, onRemove }: Props) => {
-  const currency = invoice?.currency || 'USD'
+  const currency = invoice?.currency?.toString() || 'USD'
 
   return (
     <div className="mt-6 flex flex-col w-full">
@@ -54,7 +54,7 @@ const LineItems = ({ invoice, onRemove }: Props) => {
                 </tr>
               </thead>
               <tbody className=" bg-white">
-                {invoice.line_items?.map((lineItem: InvoiceLineItem, i: number) => {
+                {invoice.lineItems?.map((lineItem: InvoiceLineItem, i: number) => {
                   if (lineItem?.type && lineItem.type !== 'sales_item') {
                     const label =
                       lineItem.type === 'discount'
@@ -65,7 +65,7 @@ const LineItems = ({ invoice, onRemove }: Props) => {
                         ? 'Sub total'
                         : ''
                     return (
-                      <tr key={lineItem.id} className="bg-gray-50">
+                      <tr key={lineItem.id || `non-sales-${i}`} className="bg-gray-50">
                         <td className="whitespace-nowrap py-2 pl-4 pr-3 text-sm text-gray-500 sm:pl-6"></td>
                         <td className="whitespace-nowrap px-2 py-2 text-sm font-medium text-gray-900"></td>
                         <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500"></td>
@@ -76,20 +76,24 @@ const LineItems = ({ invoice, onRemove }: Props) => {
                           {new Intl.NumberFormat(currency, {
                             style: 'currency',
                             currency: currency
-                          }).format(lineItem?.total_amount as any)}
+                          }).format(lineItem?.totalAmount as number)}
                         </td>
                       </tr>
                     )
                   }
 
                   const pricePerUnit =
-                    lineItem?.unit_price || (lineItem?.quantity === 1 ? lineItem?.total_amount : '')
+                    lineItem?.unitPrice ||
+                    (lineItem?.quantity === 1 ? lineItem?.totalAmount : undefined)
 
                   const totalPrice =
-                    lineItem?.total_amount || Number(lineItem.quantity) * Number(pricePerUnit)
+                    lineItem?.totalAmount ||
+                    (lineItem.quantity && pricePerUnit
+                      ? Number(lineItem.quantity) * Number(pricePerUnit)
+                      : undefined)
 
                   return (
-                    <tr key={`${lineItem.id}-${i}`} className="border-b border-gray-200">
+                    <tr key={lineItem.id || `sales-${i}`} className="border-b border-gray-200">
                       <td className="whitespace-nowrap py-2 pl-4 pr-3 text-sm text-gray-500 sm:pl-6">
                         {lineItem?.item?.id}
                       </td>
@@ -130,7 +134,7 @@ const LineItems = ({ invoice, onRemove }: Props) => {
                   )
                 })}
 
-                {invoice.total_tax !== undefined && invoice.total_tax !== null && (
+                {invoice.totalTax !== undefined && invoice.totalTax !== null && (
                   <tr className=" bg-gray-50">
                     <td className="whitespace-nowrap pb-2 pl-4 pr-3 text-sm text-gray-500 sm:pl-6"></td>
                     <td className="whitespace-nowrap px-2 pb-2 text-sm font-medium text-gray-900"></td>
@@ -142,7 +146,7 @@ const LineItems = ({ invoice, onRemove }: Props) => {
                       {new Intl.NumberFormat(currency, {
                         style: 'currency',
                         currency: currency
-                      }).format(invoice.total_tax)}
+                      }).format(invoice.totalTax)}
                     </td>
                   </tr>
                 )}

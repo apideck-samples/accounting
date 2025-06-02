@@ -1,4 +1,3 @@
-import { ConsumerMetadata, Session } from 'types/Session'
 import {
   Dispatch,
   ReactNode,
@@ -8,12 +7,13 @@ import {
   useEffect,
   useState
 } from 'react'
+import { ConsumerMetadata, Session } from 'types/Session'
 
-import camelCaseKeys from 'camelcase-keys-deep'
-import { decode } from 'jsonwebtoken'
-import { useCookieState } from 'hooks'
-import { useRouter } from 'next/router'
 import { useToast } from '@apideck/components'
+import camelCaseKeys from 'camelcase-keys-deep'
+import { useCookieState } from 'hooks'
+import { decode } from 'jsonwebtoken'
+import { useRouter } from 'next/router'
 
 type CreateSessionOptions = { consumerId: string; consumerMetadata: ConsumerMetadata }
 
@@ -57,7 +57,6 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     setToken(false)
   }
 
-  // Creates a test session with a random consumerID
   const createSession = async ({ consumerId, consumerMetadata }: CreateSessionOptions) => {
     if (!consumerId) {
       addToast({
@@ -84,16 +83,24 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       })
       const response = await raw.json()
 
-      if (response.error) {
+      console.log('response from /api/vault/sessions:', response)
+
+      if (!raw.ok) {
+        // response here is our standard API error object: { message: "...", error: originalError }
         addToast({
-          title: response.message,
-          description: response.detail.errors[0].message,
+          title: response.message || 'Session creation failed',
+          // Attempt to get a more detailed message from the nested error if available
+          description:
+            typeof response.error === 'string'
+              ? response.error
+              : response.error?.message || 'An unexpected error occurred on the server.',
           type: 'error'
         })
         return
       }
 
-      const jwt = response.data.session_token
+      // If raw.ok, response should be { sessionToken: "...", sessionUri: "..." }
+      const jwt = response.sessionToken // Access directly
 
       if (jwt) {
         setToken(jwt)
@@ -103,11 +110,20 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
           type: 'success'
         })
         push('/')
+      } else {
+        // This case might indicate an unexpected successful response (2xx) but missing token
+        addToast({
+          title: 'Session token not found',
+          description:
+            'The session was created successfully, but the session token is missing in the response.',
+          type: 'error'
+        })
       }
     } catch (error: any) {
+      // Catch network errors or issues with raw.json() itself
       addToast({
-        title: 'Something went wrong',
-        description: error?.message || error,
+        title: 'Something went wrong during session creation',
+        description: error?.message || 'A network or parsing error occurred.',
         type: 'error'
       })
     } finally {

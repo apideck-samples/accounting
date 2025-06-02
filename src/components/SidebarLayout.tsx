@@ -1,4 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react'
+import { useConnections, useSession } from 'hooks'
 import { Fragment, ReactNode, useState } from 'react'
 import {
   HiMenu,
@@ -10,15 +11,14 @@ import {
   HiOutlineUserGroup,
   HiX
 } from 'react-icons/hi'
-import { useConnections, useSession } from 'hooks'
 
-import ConsumerDropdown from './ConsumerDropdown'
+import classNames from 'classnames'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { FiBarChart2 } from 'react-icons/fi'
 import { IoTelescopeOutline } from 'react-icons/io5'
-import Link from 'next/link'
+import ConsumerDropdown from './ConsumerDropdown'
 import SelectConnection from './SelectConnection'
-import classNames from 'classnames'
-import { useRouter } from 'next/router'
 
 interface Props {
   children: ReactNode
@@ -36,16 +36,16 @@ const SidebarLayout = ({ children }: Props) => {
       'x-apideck-auth-type': 'JWT',
       'x-apideck-app-id': session?.applicationId,
       'x-apideck-consumer-id': session?.consumerId,
-      'x-apideck-service-id': connection?.service_id
+      'x-apideck-service-id': connection?.serviceId
     }),
     id: 'accounting'
   })
 
   const items = [
     {
-      name: 'Invoices',
-      href: `/`,
-      icon: HiOutlineDocumentSearch
+      name: 'Profit & Loss',
+      href: '/profit-and-loss',
+      icon: FiBarChart2
     },
     {
       name: 'Balance Sheet',
@@ -53,9 +53,9 @@ const SidebarLayout = ({ children }: Props) => {
       icon: HiOutlinePresentationChartBar
     },
     {
-      name: 'Profit & Loss',
-      href: '/profit-and-loss',
-      icon: FiBarChart2
+      name: 'Invoices',
+      href: `/`,
+      icon: HiOutlineDocumentSearch
     },
     {
       name: 'Customers',

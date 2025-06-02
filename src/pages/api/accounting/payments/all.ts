@@ -1,6 +1,4 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-
-import { GetPaymentsResponse } from '@apideck/node'
 import { init } from '../../_utils'
 
 interface Params {
@@ -11,17 +9,26 @@ interface Params {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { jwt, serviceId, cursor }: Params = req.query
-  const apideck = init(jwt as string)
+
+  if (!jwt) {
+    return res.status(400).json({ message: 'JWT is required' })
+  }
+  if (!serviceId) {
+    return res.status(400).json({ message: 'Service ID is required' })
+  }
 
   try {
-    const response: GetPaymentsResponse = await apideck.accounting.paymentsAll({
+    const apideck = init(jwt as string)
+    const response = await apideck.accounting.payments.list({
       limit: 20,
-      serviceId,
-      cursor
+      serviceId: serviceId,
+      cursor: cursor
     })
     res.json(response)
-  } catch (error: any) {
-    const response = await error.json()
-    res.status(500).json(response)
+  } catch (error: unknown) {
+    console.error('[API Payments All] Error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+    const errorStatus = (error as any)?.statusCode || 500
+    return res.status(errorStatus).json({ message: errorMessage, error: error })
   }
 }
