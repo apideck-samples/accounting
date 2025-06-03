@@ -12,6 +12,7 @@ interface ContextProps {
   connections: Connection[] | undefined
   connection: Connection | null | undefined
   isLoading: boolean
+  mutate: any
 }
 
 const ConnectorContext = createContext<Partial<ContextProps>>({})
@@ -34,7 +35,7 @@ export const ConnectionsProvider = ({ children }: { children: ReactNode }) => {
     return await response.json()
   }
 
-  const { data, error } = useSWR(
+  const { data, error, mutate } = useSWR(
     session?.jwt ? `/api/vault/connections?jwt=${session?.jwt}` : null,
     getConnections
   )
@@ -61,7 +62,9 @@ export const ConnectionsProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <ConnectorContext.Provider value={{ setConnectionId, connection, isLoading, connections }}>
+    <ConnectorContext.Provider
+      value={{ setConnectionId, connection, isLoading, connections, mutate }}
+    >
       {children}
     </ConnectorContext.Provider>
   )

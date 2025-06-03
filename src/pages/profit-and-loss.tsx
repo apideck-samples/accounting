@@ -1,6 +1,6 @@
 import { useConnections, useProfitAndLoss } from 'hooks'
 
-import Layout from 'components/Layout'
+import ConnectionRequiredLayout from 'components/ConnectionRequiredLayout'
 import PageHeading from 'components/PageHeading'
 import DateFilters from 'components/ProfitAndLoss/DateFilters'
 import ProfitAndLoss from 'components/ProfitAndLoss/ProfitAndLoss'
@@ -15,18 +15,11 @@ const ProfitAndLossPage: NextPage = () => {
   const { profitAndLoss, isLoading, startDate, setStartDate, setEndDate, endDate } =
     useProfitAndLoss()
 
-  if (!connection)
-    return (
-      <Layout title="Dashboard" description="Get started by selecting a connection">
-        <div />
-      </Layout>
-    )
-
   return (
-    <Layout title="Profit and Loss">
+    <ConnectionRequiredLayout title="Profit and Loss" pageTitle="Profit and Loss">
       <PageHeading
         title="Profit and Loss"
-        description={`Profit & loss report coming from ${connection.name}.`}
+        description={`Profit & loss report from ${connection?.name}`}
         action={
           <DateFilters
             startDate={startDate}
@@ -44,7 +37,7 @@ const ProfitAndLossPage: NextPage = () => {
         </div>
         <TotalProfitAndLoss />
       </div>
-    </Layout>
+    </ConnectionRequiredLayout>
   )
 }
 

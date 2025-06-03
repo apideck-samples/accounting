@@ -4,6 +4,7 @@ import { useSession } from 'hooks'
 const ConsumerDropdown = () => {
   const { session, clearSession } = useSession()
 
+  console.log('session', session)
   return (
     <Dropdown
       upward

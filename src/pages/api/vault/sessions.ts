@@ -1,4 +1,5 @@
 import { Apideck } from '@apideck/unify'
+import { Session } from '@apideck/unify/models/components'
 import { VercelRequest, VercelResponse } from '@vercel/node'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -16,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ message: 'APP_ID environment variable is not set' })
   }
 
-  let sessionData: any
+  let sessionData: Session
   try {
     sessionData = !body ? {} : typeof body === 'string' ? JSON.parse(body) : body
   } catch (e: unknown) {
@@ -35,7 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // The request object for sessions.create expects the payload under a 'session' property
     const result = await apideck.vault.sessions.create({
-      session: sessionData // sessionData is the parsed body or empty object
+      session: sessionData
     })
 
     // Check if the creation was successful and the response structure is as expected

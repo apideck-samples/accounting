@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import Spinner from './Spinner'
 
 const SelectConnection = () => {
-  const { setConnectionId, connection, connections, isLoading } = useConnections()
+  const { setConnectionId, connection, connections, isLoading, mutate } = useConnections()
   const { token } = useSession()
   const [serviceId, setServiceId] = useState<string | null>(null)
 
@@ -20,10 +20,11 @@ const SelectConnection = () => {
         unifiedApi: 'accounting',
         onClose: () => {
           setServiceId(null)
+          mutate()
         }
       })
     }
-  }, [token, serviceId])
+  }, [token, serviceId, mutate])
 
   const selectConnection = async (connection: Connection) => {
     if (connection.state === 'callable') {

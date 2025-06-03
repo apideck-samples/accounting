@@ -47,6 +47,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     if (token) {
       const decoded: any = decode(token)
       const session = camelCaseKeys(decoded) as Session
+      console.log('session', session)
 
       setSession({ ...session, jwt: token })
     }
@@ -74,9 +75,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         method: 'POST',
         body: JSON.stringify({
           settings: { sandbox_mode: true },
-          consumer_metadata: {
+          consumerMetadata: {
             email: consumerMetadata.email,
-            user_name: consumerMetadata.userName,
+            userName: consumerMetadata.userName,
             image: consumerMetadata.image
           }
         })
