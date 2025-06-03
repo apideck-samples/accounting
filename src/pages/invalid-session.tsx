@@ -1,17 +1,20 @@
 import { Button, TextInput } from '@apideck/components'
-
-import { NextPage } from 'next'
 import { useSession } from 'hooks'
+import { NextPage } from 'next'
 import { useState } from 'react'
 
 const InvalidSessionPage: NextPage = () => {
   const [consumerId, setConsumerId] = useState('')
-  const [userName, setUserName] = useState('Elon Musk')
-  const [email, setEmail] = useState('elon@tesla.com')
+  const [userName, setUserName] = useState('Lebron James')
+  const [email, setEmail] = useState('lebron@lakers.com')
   const [image, setImage] = useState(
-    'https://cdn.vox-cdn.com/thumbor/K7XIfxK1FAlscCjGinG9JvkMiMk=/0x0:2040x1360/920x613/filters:focal(857x517:1183x843):format(webp)/cdn.vox-cdn.com/uploads/chorus_image/image/71204583/VRG_Illo_STK022_K_Radtke_Musk_Crazy.0.jpg'
+    'https://pyxis.nymag.com/v1/imgs/847/0f7/504c63a03d8a751a5cbeda0bc064306bb4-lebron-james.rsquare.w400.jpg'
   )
   const { createSession, isLoading } = useSession()
+
+  function generateRandomId() {
+    return 'test_consumer_' + Math.random().toString(36).substring(2, 10)
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen p-4 text-center bg-gray-100">
@@ -79,21 +82,53 @@ const InvalidSessionPage: NextPage = () => {
                   value={consumerId}
                   name="consumerId"
                   placeholder="Consumer ID"
+                  autoFocus={true}
                 />
                 <Button
-                  onClick={() =>
-                    createSession({ consumerId, consumerMetadata: { userName, email, image } })
-                  }
-                  text="Create session"
+                  onClick={() => setConsumerId(generateRandomId())}
+                  text="Generate ID"
+                  variant="secondary"
                   className="whitespace-nowrap"
-                  isLoading={isLoading}
                 />
               </div>
+            </div>
+            <div>
+              <Button
+                onClick={() =>
+                  createSession({ consumerId, consumerMetadata: { userName, email, image } })
+                }
+                text="Create session"
+                className="whitespace-nowrap w-full"
+                isLoading={isLoading}
+              />
               <p className="text-xs text-gray-500 mt-2">
                 *Provide a unique ID. Most of the time, this is an ID of your internal data model
-                that represents a user or account.
+                that represents a user or account. For testing purposes, you can use a random
+                string.
               </p>
             </div>
+          </div>
+          <div className="mt-6 border-t border-gray-100 pt-4 flex justify-center">
+            <a
+              href="https://www.apideck.com/samples/accounting"
+              className="text-sm text-cyan-600 hover:text-cyan-800 flex items-center gap-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4"
+              >
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+              Return to Apideck Samples
+            </a>
           </div>
         </div>
       </div>

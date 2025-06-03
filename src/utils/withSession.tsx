@@ -3,8 +3,8 @@ import { ComponentType, useEffect, useState } from 'react'
 import Layout from 'components/Layout'
 import PageHeading from 'components/PageHeading'
 import PageLoader from 'components/PageLoader'
-import { useRouter } from 'next/router'
 import { useSession } from 'hooks'
+import { useRouter } from 'next/router'
 
 const defaultOnLoading = (): JSX.Element => <PageLoader />
 const defaultOnError = (error: any): JSX.Element => (
@@ -63,9 +63,7 @@ export const withSession: WithPageSessionRequired = (Component, options = {}) =>
     const [mounted, setMounted] = useState(false)
 
     const {
-      returnTo = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production'
-        ? 'https://apideck.com/samples/accounting'
-        : '/invalid-session',
+      returnTo = '/invalid-session',
       onRedirecting = defaultOnRedirecting,
       onError = defaultOnError,
       onLoading = defaultOnLoading

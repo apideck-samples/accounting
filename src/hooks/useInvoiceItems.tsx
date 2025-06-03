@@ -37,8 +37,6 @@ export const useInvoiceItems = () => {
     return result
   }
 
-  console.log('data', data)
-
   const isLoading = !swrError && !data && !!getInvoiceItemsUrl
   const responseData = data?.getInvoiceItemsResponse
   const apiErrorMessage = data?.message

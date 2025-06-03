@@ -39,11 +39,6 @@ export const ConnectionsProvider = ({ children }: { children: ReactNode }) => {
     getConnections
   )
 
-  console.log('data from /api/vault/connections:', data)
-  if (error) {
-    console.error('Error fetching connections:', error)
-  }
-
   const isLoading = !!(session?.jwt && !data && !error)
   const connections = data?.getConnectionsResponse?.data as Connection[] | undefined
   const connection = connections?.find((c: Connection) => c.id === connectionId)
@@ -52,6 +47,11 @@ export const ConnectionsProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!connectionId && callableConnections?.length) {
       setConnectionId(callableConnections[0].id as string)
+    } else if (
+      connectionId &&
+      !callableConnections?.find((c: Connection) => c.id === connectionId)
+    ) {
+      setConnectionId(null)
     }
   }, [setConnectionId, callableConnections, connectionId])
 

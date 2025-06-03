@@ -27,7 +27,7 @@ const InvoicesPage: NextPage = () => {
         ]}
       />
       <div className="py-6 space-y-6 xl:space-y-8 mt-3 border-t border-gray-200">
-        {connection ? (
+        {connection?.enabled ? (
           <InvoicesTable />
         ) : (
           <div className="text-center py-12">

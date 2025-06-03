@@ -37,8 +37,6 @@ const CustomerDetails = ({ customer, onClose }: Props) => {
     }
   }
 
-  console.log('customer', customer)
-
   return (
     <div className="divide-y divide-gray-200">
       <div className="pb-6">

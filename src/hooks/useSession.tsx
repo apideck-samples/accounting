@@ -52,8 +52,6 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [token])
 
-  console.log('session', session)
-
   const clearSession = () => {
     setSession(null)
     setToken(false)
