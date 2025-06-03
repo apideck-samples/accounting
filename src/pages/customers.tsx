@@ -16,7 +16,10 @@ const CustomersPage: NextPage = () => {
   const { nextPage, prevPage, hasNextPage, hasPrevPage, isLoading } = useCustomers()
 
   return (
-    <ConnectionRequiredLayout title="Customers" pageTitle="Customers">
+    <ConnectionRequiredLayout
+      title="Customers"
+      description={`Manage customer data from ${connection?.name || 'your business'}`}
+    >
       <PageHeading
         title="Customers"
         description={`Manage customer data from ${connection?.name}`}

@@ -16,7 +16,10 @@ const ProfitAndLossPage: NextPage = () => {
     useProfitAndLoss()
 
   return (
-    <ConnectionRequiredLayout title="Profit and Loss" pageTitle="Profit and Loss">
+    <ConnectionRequiredLayout
+      title="Profit and Loss"
+      description={`Profit & loss report from ${connection?.name || 'your business'}`}
+    >
       <PageHeading
         title="Profit and Loss"
         description={`Profit & loss report from ${connection?.name}`}

@@ -47,7 +47,6 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     if (token) {
       const decoded: any = decode(token)
       const session = camelCaseKeys(decoded) as Session
-      console.log('session', session)
 
       setSession({ ...session, jwt: token })
     }

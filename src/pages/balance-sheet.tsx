@@ -1,4 +1,4 @@
-import { useBalanceSheet } from 'hooks'
+import { useBalanceSheet, useConnections } from 'hooks'
 
 import BalanceSheet from 'components/BalanceSheet/BalanceSheet'
 import BalanceSheetStats from 'components/BalanceSheet/BalanceSheetStats'
@@ -10,9 +10,13 @@ import { withSession } from 'utils'
 
 const BalanceSheetPage: NextPage = () => {
   const { balanceSheet, isLoading } = useBalanceSheet()
+  const { connection } = useConnections()
 
   return (
-    <ConnectionRequiredLayout title="Balance Sheet" pageTitle="Balance Sheet">
+    <ConnectionRequiredLayout
+      title="Balance Sheet"
+      description={`Balance sheet for ${connection?.name || 'your business'}`}
+    >
       <PageHeading title="Balance Sheet" />
       <div className="py-6 space-y-6 xl:space-y-8 mt-3 border-t border-gray-200">
         <BalanceSheetStats />

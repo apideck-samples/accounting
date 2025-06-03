@@ -9,7 +9,10 @@ const PaymentsPage: NextPage = () => {
   const { connection } = useConnections()
 
   return (
-    <ConnectionRequiredLayout title="Payments" pageTitle="Payments">
+    <ConnectionRequiredLayout
+      title="Payments"
+      description={`Manage payments from ${connection?.name || 'your business'}`}
+    >
       <PageHeading title="Payments" description={`Manage payments from ${connection?.name}`} />
       <div className="py-6 space-y-6 xl:space-y-8 mt-3 border-t border-gray-200">
         <PaymentsTable />
