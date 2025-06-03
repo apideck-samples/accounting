@@ -1,8 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { init } from '../_utils'
-// Removed: import type { GetProfitAndLossResponse } from '@apideck/node'
-// Import the specific filter type if needed for explicit typing, though often inferred
-// import { ProfitAndLossFilter } from '@apideck/unify/models/components'
 
 interface Params {
   serviceId?: string

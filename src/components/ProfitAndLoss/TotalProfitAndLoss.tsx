@@ -1,4 +1,4 @@
-import type { ProfitAndLoss } from '@apideck/unify/models/components' // Added for explicit typing of report
+import type { ProfitAndLoss } from '@apideck/unify/models/components'
 import ChartWrapper from 'components/ChartWrapper'
 import { useProfitAndLoss } from 'hooks'
 import dynamic from 'next/dynamic'
@@ -40,7 +40,7 @@ const TotalProfitAndLoss = () => {
   const primaryAxis = useMemo(
     () => ({
       getValue: (datum: MonthlyReportDataPoint) => datum.date,
-      scaleType: 'time' // Explicitly set scale type for dates
+      scaleType: 'time'
     }),
     []
   )

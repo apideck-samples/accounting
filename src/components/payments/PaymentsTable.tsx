@@ -1,8 +1,7 @@
 import { Button } from '@apideck/components'
-import { HiOutlineDocumentSearch } from 'react-icons/hi'
-// import { Payment } from '@apideck/node' // Old import
-import type { Payment } from '@apideck/unify/models/components' // New import
+import type { Payment } from '@apideck/unify/models/components'
 import { usePayments } from 'hooks/usePayments'
+import { HiOutlineDocumentSearch } from 'react-icons/hi'
 import PaymentsTableLoadingRow from './PaymentsTableLoadingRow'
 
 const PaymentsTable = () => {

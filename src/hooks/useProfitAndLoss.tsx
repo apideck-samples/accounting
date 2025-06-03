@@ -77,14 +77,6 @@ export const useProfitAndLoss = () => {
       )
       const reportEndDate = toYYYYMMDD(lastDayOfTargetMonth)
 
-      if (new Date(reportStartDate) > new Date(reportEndDate)) {
-        console.error(
-          // This is a critical internal logic error, not a diagnostic log.
-          `[useProfitAndLoss] FATAL MONTHLY DATE LOGIC ERROR IN LOOP: ${reportStartDate} > ${reportEndDate}`
-        )
-        continue
-      }
-
       reportUrls.push(
         `/api/accounting/profit-and-loss?jwt=${session.jwt}&serviceId=${serviceId}&filter[start_date]=${reportStartDate}&filter[end_date]=${reportEndDate}`
       )

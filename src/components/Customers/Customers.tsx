@@ -1,5 +1,4 @@
-// import { AccountingCustomer } from '@apideck/node' // Old import
-import type { Customer } from '@apideck/unify/models/components' // New import
+import type { Customer } from '@apideck/unify/models/components'
 import Spinner from 'components/Spinner'
 import { useCustomers } from 'hooks'
 import CustomerCard from './CustomerCard'

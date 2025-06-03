@@ -22,7 +22,6 @@ import { HiPlus } from 'react-icons/hi'
 import LineItems from './LineItems'
 import SelectInvoiceItems from './SelectInvoiceItems'
 
-// Define a more specific type for customer options used by the Dropdown
 interface CustomerDropdownOption {
   value: string
   label: string

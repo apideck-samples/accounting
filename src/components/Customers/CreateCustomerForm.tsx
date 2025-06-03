@@ -37,18 +37,16 @@ const CreateCustomerForm = ({ closeForm }: { closeForm: any }) => {
       lastName: lastName,
       displayName: finalDisplayName,
       phoneNumbers: phoneNumberValue
-        ? [{ number: phoneNumberValue, type: 'primary' } as PhoneNumber] // Cast to PhoneNumber
-        : undefined, // Explicitly undefined if not provided, as CustomerInput type expects Array<PhoneNumber> | undefined
-      emails: emailAddress
-        ? [{ email: emailAddress, type: 'primary' } as Email] // Cast to Email
-        : undefined, // Explicitly undefined
+        ? [{ number: phoneNumberValue, type: 'primary' } as PhoneNumber]
+        : undefined,
+      emails: emailAddress ? [{ email: emailAddress, type: 'primary' } as Email] : undefined,
       notes: notes,
       passThrough: [
         {
-          serviceId: 'xero', // Target Xero
-          operationId: 'accountingCustomersCreate', // Corresponds to the create operation
+          serviceId: 'xero', // Example of how to use passThrough
+          operationId: 'accountingCustomersCreate',
           extendObject: {
-            Name: finalDisplayName // Xero often uses a top-level 'Name' field
+            Name: finalDisplayName
           }
         }
       ]

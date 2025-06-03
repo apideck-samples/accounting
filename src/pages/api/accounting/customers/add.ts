@@ -1,6 +1,6 @@
+import { CustomerInput } from '@apideck/unify/models/components'
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { init } from '../../_utils'
-// Potentially import specific type for customer data: import { AccountingCustomer } from '@apideck/unify/models/components';
 
 interface Params {
   jwt?: string
@@ -21,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ message: 'Request body is required' })
   }
 
-  let customerData: any // Should be typed e.g. AccountingCustomer
+  let customerData: CustomerInput
   try {
     customerData = typeof body === 'string' ? JSON.parse(body) : body
   } catch (e) {
