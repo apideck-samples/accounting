@@ -12,7 +12,6 @@ export const init = (jwt: string) => {
     throw new Error('Invalid JWT token: Failed to decode or not an object.')
   }
 
-  // Safely access properties after type check
   const decodedObject = decoded as Record<string, any>
 
   const { applicationId, consumerId } = camelCaseKeys(decodedObject) as {
@@ -33,7 +32,7 @@ export const init = (jwt: string) => {
   return new Apideck({
     apiKey: process.env.API_KEY,
     appId: applicationId,
-    consumerId: consumerId
+    consumerId
     // basePath: 'https://mock-api.apideck.com/'
   })
 }

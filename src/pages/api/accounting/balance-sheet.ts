@@ -1,14 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { init } from '../_utils'
-// Removed: import type { GetBalanceSheetResponse } from '@apideck/node'
-// Import BalanceSheetFilter if explicit typing is desired
-// import { BalanceSheetFilter } from '@apideck/unify/models/components';
+
+import { BalanceSheetFilter } from '@apideck/unify/models/components'
 
 interface Params {
   serviceId?: string
   jwt?: string
-  // Add other potential query params for filtering if needed
-  // e.g., 'filter[end_date]'?: string;
+  filter?: BalanceSheetFilter
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

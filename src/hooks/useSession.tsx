@@ -52,6 +52,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [token])
 
+  console.log('session', session)
+
   const clearSession = () => {
     setSession(null)
     setToken(false)
@@ -83,13 +85,9 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       })
       const response = await raw.json()
 
-      console.log('response from /api/vault/sessions:', response)
-
       if (!raw.ok) {
-        // response here is our standard API error object: { message: "...", error: originalError }
         addToast({
           title: response.message || 'Session creation failed',
-          // Attempt to get a more detailed message from the nested error if available
           description:
             typeof response.error === 'string'
               ? response.error
@@ -99,8 +97,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         return
       }
 
-      // If raw.ok, response should be { sessionToken: "...", sessionUri: "..." }
-      const jwt = response.sessionToken // Access directly
+      const jwt = response.sessionToken
 
       if (jwt) {
         setToken(jwt)
@@ -111,7 +108,6 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         })
         push('/')
       } else {
-        // This case might indicate an unexpected successful response (2xx) but missing token
         addToast({
           title: 'Session token not found',
           description:
@@ -120,7 +116,6 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         })
       }
     } catch (error: any) {
-      // Catch network errors or issues with raw.json() itself
       addToast({
         title: 'Something went wrong during session creation',
         description: error?.message || 'A network or parsing error occurred.',

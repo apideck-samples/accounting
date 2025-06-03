@@ -1,12 +1,10 @@
 import { Apideck } from '@apideck/unify'
 import { VercelRequest, VercelResponse } from '@vercel/node'
-// Potentially import Session type for stricter typing of parsedBody if needed:
-// import { Session } from '@apideck/unify/models/components'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { body, query } = req
   const consumerIdFromQuery = query?.consumerId as string | undefined
-  // Using a more robust random string and timestamp for uniqueness
+  // Demo consumerId, for production use a unique ID related to the user, for example a user ID
   const consumerId =
     consumerIdFromQuery ||
     `demo-accounting-${Math.random().toString(36).substring(2, 10)}-${new Date().getTime()}`
@@ -20,13 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   let sessionData: any
   try {
-    if (!body) {
-      // If body is not present, initialize sessionData as an empty object for default settings.
-      // The Apideck API might allow this for session creation.
-      sessionData = {}
-    } else {
-      sessionData = typeof body === 'string' ? JSON.parse(body) : body
-    }
+    sessionData = !body ? {} : typeof body === 'string' ? JSON.parse(body) : body
   } catch (e: unknown) {
     const parseErrorMessage = e instanceof Error ? e.message : 'Invalid JSON in request body'
     return res.status(400).json({ message: parseErrorMessage, error: e })

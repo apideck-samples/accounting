@@ -1,8 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { init } from '../../_utils'
-// import { CreateInvoiceItemResponse } from '@apideck/node' // Old import
-// We might need InvoiceItemInput for explicit typing of the payload
-// import { InvoiceItemInput } from '@apideck/unify/models/components';
+
+import { InvoiceItemInput } from '@apideck/unify/models/components'
 
 interface Params {
   jwt?: string
@@ -23,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ message: 'Request body is required' })
   }
 
-  let invoiceItemPayload: any // Should be typed as InvoiceItemInput
+  let invoiceItemPayload: InvoiceItemInput
   try {
     invoiceItemPayload = typeof body === 'string' ? JSON.parse(body) : body
   } catch (e) {
@@ -32,18 +31,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const apideck = init(jwt as string)
-    // New method is invoiceItems.create(), payload is { serviceId, invoiceItem: InvoiceItemInput }
     const response = await apideck.accounting.invoiceItems.create({
       serviceId: serviceId,
-      invoiceItem: invoiceItemPayload // This should be of type InvoiceItemInput
+      invoiceItem: invoiceItemPayload
     })
-    // The response from SDK (AccountingInvoiceItemsAddResponse) contains createInvoiceItemResponse.data for the created item
+
     if (response.createInvoiceItemResponse?.data) {
-      res.json(response.createInvoiceItemResponse.data) // Return the created invoice item directly
+      res.json(response.createInvoiceItemResponse.data)
     } else {
-      // This case implies success from SDK (2xx) but unexpected structure or no data.
       console.warn('[API Invoice Items Add] SDK returned success but no item data:', response)
-      res.status(200).json(response) // Return the full SDK response for client to inspect
+      res.status(200).json(response)
     }
   } catch (error: unknown) {
     console.error('[API Invoice Items Add] Error:', error)
