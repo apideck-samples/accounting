@@ -3,6 +3,7 @@ import {
   ReactNode,
   SetStateAction,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState
@@ -43,19 +44,18 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     }
   })
 
-  useEffect(() => {
-    if (token) {
-      const decoded: any = decode(token)
-      const session = camelCaseKeys(decoded) as Session
-
-      setSession({ ...session, jwt: token })
-    }
-  }, [token])
-
-  const clearSession = () => {
+  const clearSession = useCallback(() => {
     setSession(null)
-    setToken(false)
-  }
+    setToken(null) // Use null instead of false to properly clear
+  }, [setSession, setToken])
+
+  useEffect(() => {
+    if (token && !session) {
+      const decoded: any = decode(token)
+      const decodedSession = camelCaseKeys(decoded) as Session
+      setSession({ ...decodedSession, jwt: token })
+    }
+  }, [token, session])
 
   const createSession = async ({ consumerId, consumerMetadata }: CreateSessionOptions) => {
     if (!consumerId) {
