@@ -1,25 +1,15 @@
 import { CustomerInput } from '@apideck/unify/models/components'
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { init } from '../../_utils'
+import { withProtection } from '../../_utils/with-protection'
 
-interface Params {
-  jwt?: string
-  serviceId?: string
-}
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { body, query } = req
-  const { jwt, serviceId }: Params = query
-
-  if (!jwt) {
-    return res.status(400).json({ message: 'JWT is required' })
-  }
-  if (!serviceId) {
-    return res.status(400).json({ message: 'Service ID is required' })
-  }
-  if (!body) {
-    return res.status(400).json({ message: 'Request body is required' })
-  }
+async function handler(
+  req: VercelRequest,
+  res: VercelResponse,
+  context: { jwt: string; serviceId: string }
+) {
+  const { jwt, serviceId } = context
+  const { body } = req
 
   let customerData: CustomerInput
   try {
@@ -29,7 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const apideck = init(jwt as string)
+    const apideck = init(jwt)
     const response = await apideck.accounting.customers.create({
       serviceId: serviceId,
       customer: customerData
@@ -43,3 +33,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(errorStatus).json({ message: errorMessage, error: error })
   }
 }
+
+export default withProtection(handler, { requireServiceId: true, requireBody: true })

@@ -140,7 +140,6 @@ export const useProfitAndLoss = () => {
       singleReportError,
       multiMonthError,
       singleReportData,
-      multiMonthData,
       extractedMonthlyReports
     ]
   )

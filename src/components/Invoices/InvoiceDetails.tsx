@@ -61,12 +61,12 @@ const InvoiceDetails = ({ invoice, onClose }: Props) => {
   return (
     <div className="divide-y divide-gray-200 dark:divide-gray-700">
       <div className="pb-6">
-        <div className="h-24 bg-gradient bg-gradient-to-r from-primary-600 to-primary-500 sm:h-20 lg:h-28 rounded-md" />
-        <div className="lg:-mt-15 -mt-12 flow-root px-4 sm:-mt-8 sm:flex sm:items-end sm:px-6 lg:-mt-20">
+        <div className="h-24 bg-gradient bg-gradient-to-r from-primary-600 to-primary-500 sm:h-20 lg:h-28" />
+        <div className="lg:-mt-15 -mt-12 flow-root px-4 sm:-mt-8 sm:flex sm:items-end sm:px-6 lg:-mt-8">
           <div>
             <div className="-m-1 flex">
               <div className="inline-flex overflow-hidden rounded-lg border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-700">
-                <HiOutlineOfficeBuilding className="h-24 w-24 text-gray-500 dark:text-gray-400 p-4 sm:h-32 sm:w-32 lg:h-40 lg:w-40" />
+                <HiOutlineOfficeBuilding className="h-24 w-24 text-gray-500 dark:text-gray-400 p-4 sm:h-32 sm:w-32 lg:h-40 lg:w-40 p-4" />
               </div>
             </div>
           </div>
@@ -118,8 +118,8 @@ const InvoiceDetails = ({ invoice, onClose }: Props) => {
                           {({ active }) => (
                             <button
                               type="button"
-                              onClick={() => onDelete(invoice.id!)}
-                              disabled={isLoading}
+                              onClick={() => invoice.id && onDelete(invoice.id)}
+                              disabled={isLoading || !invoice.id}
                               className={`${
                                 active
                                   ? 'bg-red-100 dark:bg-red-600 text-red-700 dark:text-red-50'
@@ -250,15 +250,18 @@ const InvoiceDetails = ({ invoice, onClose }: Props) => {
                         </thead>
                         <tbody className="bg-white dark:bg-gray-900">
                           {invoice.lineItems?.map((lineItem: InvoiceLineItem, i: number) => {
-                            if (lineItem.type !== 'sales_item') {
+                            const isSummaryLine =
+                              lineItem.type === 'discount' ||
+                              lineItem.type === 'info' ||
+                              lineItem.type === 'sub_total'
+
+                            if (isSummaryLine) {
                               const label =
                                 lineItem.type === 'discount'
                                   ? 'Discount'
                                   : lineItem.type === 'info'
                                   ? 'Info'
-                                  : lineItem.type === 'sub_total'
-                                  ? 'Sub total'
-                                  : ''
+                                  : 'Sub total'
                               return (
                                 <tr
                                   key={lineItem.id || `non-sales-${i}`}
@@ -287,10 +290,10 @@ const InvoiceDetails = ({ invoice, onClose }: Props) => {
                                 key={lineItem.id || `sales-${i}`}
                                 className="border-b border-gray-200 dark:border-gray-700"
                               >
-                                <td className="whitespace-nowrap py-2 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
+                                <td className="whitespace-nowrap truncate max-w-28 py-2 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
                                   {lineItem?.item?.id || 'N/A'}
                                 </td>
-                                <td className="whitespace-nowrap px-2 py-2 text-sm font-medium text-gray-900 dark:text-white truncate">
+                                <td className="whitespace-nowrap truncate max-w-64 px-2 py-2 text-sm font-medium text-gray-900 dark:text-white truncate">
                                   {lineItem?.item?.name || lineItem?.description || 'N/A'}
                                 </td>
                                 <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-700 dark:text-gray-300">

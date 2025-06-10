@@ -113,8 +113,8 @@ const CreditNoteDetails = ({ creditNote, onClose }: Props) => {
                           {({ active }) => (
                             <button
                               type="button"
-                              onClick={() => onDelete(creditNote.id!)}
-                              disabled={isLoading}
+                              onClick={() => creditNote.id && onDelete(creditNote.id)}
+                              disabled={isLoading || !creditNote.id}
                               className={`${
                                 active
                                   ? 'bg-red-100 text-red-700 dark:bg-red-600 dark:text-red-50'

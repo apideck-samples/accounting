@@ -81,10 +81,9 @@ const CreateExpenseForm = ({ closeForm }: { closeForm: any }) => {
             ]
           : []
     }
-    console.log('Creating expense with payload:', expenseToCreatePayload)
 
     const response = await createExpense(expenseToCreatePayload as Omit<Expense, 'id'>)
-    console.log('Response from createExpense:', response)
+
     setIsLoading(false)
 
     if (response && response.id && !response.error) {

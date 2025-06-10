@@ -1,19 +1,15 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { init } from '../_utils'
+import { withProtection } from '../_utils/with-protection'
 
-interface Params {
-  jwt?: string
-}
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { jwt }: Params = req.query
-
-  if (!jwt) {
-    return res.status(400).json({ message: 'JWT is required' })
-  }
-
+async function handler(
+  _: VercelRequest,
+  res: VercelResponse,
+  context: { jwt: string; serviceId: string }
+) {
+  const { jwt } = context
   try {
-    const apideck = init(jwt as string)
+    const apideck = init(jwt)
     const result = await apideck.vault.connections.list({ api: 'accounting' })
     res.json(result)
   } catch (error: unknown) {
@@ -23,3 +19,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(errorStatus).json({ message: errorMessage, error: error })
   }
 }
+
+export default withProtection(handler)

@@ -121,7 +121,12 @@ const CreatePurchaseOrderForm = ({ closeForm }: { closeForm: any }) => {
 
   const supplierOptions: DropdownOption[] = useMemo(() => {
     if (isLoadingSuppliers || !suppliers) return []
-    return suppliers.map((s) => ({ value: s.id!, label: s.displayName || s.companyName || s.id! }))
+    return suppliers
+      .filter((s) => s.id)
+      .map((s) => ({
+        value: s.id as string,
+        label: s.displayName || s.companyName || (s.id as string)
+      }))
   }, [suppliers, isLoadingSuppliers])
 
   const statusOptions = useMemo(

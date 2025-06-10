@@ -29,10 +29,9 @@ const ExpenseDetails = ({ expense, onClose }: Props) => {
   const onDelete = async (id: string) => {
     setIsLoading(true)
     setDeleteErrorIssues(null)
-    console.log('[ExpenseDetails] Attempting to delete expense with ID:', id)
 
     const response = await deleteExpense(id)
-    console.log('[ExpenseDetails] Response from deleteExpense hook:', response)
+
     setIsLoading(false)
 
     if (response && response.success) {
@@ -107,8 +106,8 @@ const ExpenseDetails = ({ expense, onClose }: Props) => {
                           {({ active }) => (
                             <button
                               type="button"
-                              onClick={() => onDelete(expense.id!)}
-                              disabled={isLoading}
+                              onClick={() => expense.id && onDelete(expense.id)}
+                              disabled={isLoading || !expense.id}
                               className={`${
                                 active
                                   ? 'bg-red-100 text-red-700 dark:bg-red-600 dark:text-red-50'

@@ -68,8 +68,7 @@ const CreateInvoiceForm = ({
       quantity: 1,
       unitPrice: invoiceItem.unitPrice,
       type: 'sales_item',
-      totalAmount: invoiceItem.unitPrice,
-      taxRate: { id: 'DEFAULT_TAX_RATE_ID' }
+      totalAmount: invoiceItem.unitPrice
     }
     setLineItems([...lineItems, newLineItem])
     removeModal()
@@ -143,18 +142,17 @@ const CreateInvoiceForm = ({
   const customerOptions: CustomerDropdownOption[] = useMemo(
     () =>
       customers
-        ?.map((cust: Customer) => {
-          if (!cust.id) return null
+        ?.filter((cust): cust is Customer & { id: string } => !!cust.id)
+        .map((cust: Customer) => {
           return {
-            value: cust.id!,
+            value: cust.id,
             label:
               cust.displayName ||
               (cust.firstName && cust.lastName
                 ? `${cust.firstName} ${cust.lastName}`
                 : cust.companyName || cust.id || 'Unnamed Customer')
           }
-        })
-        .filter((opt): opt is CustomerDropdownOption => opt !== null) || [],
+        }) || [],
     [customers]
   )
 

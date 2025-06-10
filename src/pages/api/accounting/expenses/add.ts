@@ -1,25 +1,18 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { init } from '../../_utils'
 import { handleApiError } from '../../_utils/apiErrorUtils'
+import { withProtection } from '../../_utils/with-protection'
 
-interface Params {
-  jwt?: string
-  serviceId?: string
-}
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { body, query } = req
-  const { jwt, serviceId }: Params = query
-
-  if (!jwt) {
-    return res.status(400).json({ message: 'JWT is required' })
-  }
-  if (!serviceId) {
-    return res.status(400).json({ message: 'Service ID is required' })
-  }
+async function handler(
+  req: VercelRequest,
+  res: VercelResponse,
+  context: { jwt: string; serviceId: string }
+) {
+  const { jwt, serviceId } = context
+  const { body } = req
 
   try {
-    const apideck = init(jwt as string)
+    const apideck = init(jwt)
     const expense = JSON.parse(body)
 
     // Convert transactionDate string to Date object if present
@@ -36,3 +29,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     handleApiError(res, error, 'Failed to add expense')
   }
 }
+
+export default withProtection(handler, { requireServiceId: true, requireBody: true })

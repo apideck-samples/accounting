@@ -1,28 +1,21 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { init } from '../../_utils'
+import { withProtection } from '../../_utils/with-protection'
 
-interface Params {
-  serviceId?: string
-  cursor?: string
-  jwt?: string
-}
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { jwt, serviceId, cursor }: Params = req.query
-
-  if (!jwt) {
-    return res.status(400).json({ message: 'JWT is required' })
-  }
-  if (!serviceId) {
-    return res.status(400).json({ message: 'Service ID is required' })
-  }
+async function handler(
+  req: VercelRequest,
+  res: VercelResponse,
+  context: { jwt: string; serviceId: string }
+) {
+  const { jwt, serviceId } = context
+  const { cursor } = req.query
 
   try {
-    const apideck = init(jwt as string)
+    const apideck = init(jwt)
     const response = await apideck.accounting.invoiceItems.list({
       limit: 200,
       serviceId: serviceId,
-      cursor: cursor
+      cursor: cursor as string | undefined
     })
     res.json(response)
   } catch (error: unknown) {
@@ -32,3 +25,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(errorStatus).json({ message: errorMessage, error: error })
   }
 }
+
+export default withProtection(handler, { requireServiceId: true })

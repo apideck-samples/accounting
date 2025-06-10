@@ -181,7 +181,8 @@ const InvoicesTable = () => {
               (error as any)?.statusCode === 402) && (
               <>
                 <p className="mt-2 mb-3 text-sm text-gray-500 dark:text-gray-400">
-                  There might be an issue with the connection's authorization or your subscription.
+                  There might be an issue with the connection&apos;s authorization or your
+                  subscription.
                 </p>
                 <Button
                   text="Re-authorize connection"

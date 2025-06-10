@@ -2,28 +2,18 @@ import { Supplier } from '@apideck/unify/models/components' // Import Supplier t
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { init } from '../../_utils'
 import { handleApiError } from '../../_utils/apiErrorUtils'
+import { withProtection } from '../../_utils/with-protection'
 
-interface Params {
-  jwt?: string
-  serviceId?: string
-}
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { body, query } = req
-  const { jwt, serviceId }: Params = query
-
-  if (!jwt) {
-    return res.status(400).json({ message: 'JWT is required' })
-  }
-  if (!serviceId) {
-    return res.status(400).json({ message: 'Service ID is required' })
-  }
-  if (!body) {
-    return res.status(400).json({ message: 'Request body is required' })
-  }
+async function handler(
+  req: VercelRequest,
+  res: VercelResponse,
+  context: { jwt: string; serviceId: string }
+) {
+  const { jwt, serviceId } = context
+  const { body } = req
 
   try {
-    const apideck = init(jwt as string)
+    const apideck = init(jwt)
     const supplierData = (typeof body === 'string' ? JSON.parse(body) : body) as Omit<
       Supplier,
       'id'
@@ -38,3 +28,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     handleApiError(res, error, 'Failed to create supplier')
   }
 }
+
+export default withProtection(handler, { requireServiceId: true, requireBody: true })

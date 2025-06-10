@@ -1,28 +1,18 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { init } from '../../_utils'
-
-interface Params {
-  jwt?: string
-  serviceId?: string
-}
+import { withProtection } from '../../_utils/with-protection'
 
 interface Body {
   id?: string
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { body, query } = req
-  const { jwt, serviceId }: Params = query
-
-  if (!jwt) {
-    return res.status(400).json({ message: 'JWT is required' })
-  }
-  if (!serviceId) {
-    return res.status(400).json({ message: 'Service ID is required' })
-  }
-  if (!body) {
-    return res.status(400).json({ message: 'Request body is required' })
-  }
+async function handler(
+  req: VercelRequest,
+  res: VercelResponse,
+  context: { jwt: string; serviceId: string }
+) {
+  const { jwt, serviceId } = context
+  const { body } = req
 
   let parsedBody: Body
   try {
@@ -38,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const apideck = init(jwt as string)
+    const apideck = init(jwt)
     const result = await apideck.accounting.customers.delete({
       serviceId: serviceId,
       id: id
@@ -54,3 +44,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(errorStatus).json({ message: errorMessage, error: error })
   }
 }
+
+export default withProtection(handler, { requireServiceId: true, requireBody: true })
