@@ -38,8 +38,20 @@ interface ExtractedInfo {
 }
 
 function extractMostSpecificError(data: any, depth = 0): ExtractedInfo {
-  if (!data || typeof data !== 'object' || depth > 7) {
+  if (!data || typeof data !== 'object' || depth > 8) {
     return { message: null, isSpecificConnectorError: false }
+  }
+
+  // Priority -1: Freshbooks specific error structure (very deep)
+  if (
+    data.error?.response?.errors &&
+    Array.isArray(data.error.response.errors) &&
+    data.error.response.errors.length > 0
+  ) {
+    const firstFreshbooksError = data.error.response.errors[0]
+    if (firstFreshbooksError && typeof firstFreshbooksError.message === 'string') {
+      return { message: firstFreshbooksError.message, isSpecificConnectorError: true }
+    }
   }
 
   // Priority 1: Xero's ValidationException Elements array
@@ -117,7 +129,7 @@ function extractMostSpecificError(data: any, depth = 0): ExtractedInfo {
     }
   }
 
-  // Priority 5: Recursively check common nested structures
+  // Recursively check common nested structures (adding 'error' at a higher precedence now)
   const potentialNestedPaths = ['error', 'detail', 'errors', 'issues']
   for (const pathKey of potentialNestedPaths) {
     if (data[pathKey]) {
@@ -130,11 +142,8 @@ function extractMostSpecificError(data: any, depth = 0): ExtractedInfo {
     }
   }
 
-  // Fallback 6: Any top-level message if all else fails
-  if (typeof data.message === 'string')
-    return { message: data.message, isSpecificConnectorError: false }
-  if (typeof data.Message === 'string')
-    return { message: data.Message, isSpecificConnectorError: false }
+  // Fallback: If we skipped a generic message at this level, and found nothing deeper, return it now.
+  if (messageProp) return { message: messageProp, isSpecificConnectorError: false }
 
   return { message: null, isSpecificConnectorError: false }
 }

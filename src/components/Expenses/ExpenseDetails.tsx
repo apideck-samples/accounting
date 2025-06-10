@@ -63,28 +63,28 @@ const ExpenseDetails = ({ expense, onClose }: Props) => {
   return (
     <div className="divide-y divide-gray-200 dark:divide-gray-700">
       <div className="pb-6">
-        <div className="h-24 bg-gradient bg-gradient-to-r from-red-600 to-red-500 sm:h-20 lg:h-28 rounded-md" />
-        <div className="lg:-mt-15 -mt-12 flow-root px-4 sm:-mt-8 sm:flex sm:items-end sm:px-6 lg:-mt-20">
+        <div className="h-24 rounded-md bg-gradient bg-gradient-to-r from-red-600 to-red-500 sm:h-20 lg:h-28" />
+        <div className="-mt-12 flow-root px-4 sm:-mt-8 sm:flex sm:items-end sm:px-6 lg:-mt-15">
           <div>
             <div className="-m-1 flex">
-              <div className="inline-flex overflow-hidden rounded-lg border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-700">
-                <HiOutlineOfficeBuilding className="h-24 w-24 text-gray-500 dark:text-gray-400 p-4 sm:h-32 sm:w-32 lg:h-40 lg:w-40" />
+              <div className="inline-flex overflow-hidden rounded-lg border-4 border-white bg-white dark:border-gray-800 dark:bg-gray-700">
+                <HiOutlineOfficeBuilding className="h-24 w-24 p-4 text-gray-500 dark:text-gray-400 sm:h-40 sm:w-40 lg:h-48 lg:w-48" />
               </div>
             </div>
           </div>
           <div className="mt-6 sm:ml-6 sm:flex-1">
-            <div>
-              <div className="flex items-center">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
+            <div className="sm:flex sm:min-w-0 sm:flex-1 sm:items-center sm:justify-between">
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
                   Expense {expense.number || 'N/A'}
                 </h3>
+                <p className="mt-1 truncate text-sm text-gray-500 dark:text-gray-400">
+                  ID: {expense.id}
+                </p>
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">ID: {expense.id}</p>
-            </div>
-            <div className="mt-5 flex flex-wrap space-y-3 sm:space-y-0 sm:space-x-3">
-              <div className="ml-auto inline-flex sm:ml-0">
+              <div className="mt-4 flex flex-shrink-0 items-center gap-x-3 sm:mt-0 sm:ml-4">
                 <Menu as="div" className="relative inline-block text-left">
-                  <Menu.Button className="inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-2 text-sm font-medium text-gray-400 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                  <Menu.Button className="inline-flex items-center rounded-md border border-gray-300 bg-white p-2 text-sm font-medium text-gray-400 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                     <span className="sr-only">Open options menu</span>
                     {isLoading ? (
                       <Spinner className="h-5 w-5" />
@@ -101,7 +101,7 @@ const ExpenseDetails = ({ expense, onClose }: Props) => {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-gray-700 shadow-lg ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none">
+                    <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700 dark:ring-gray-600">
                       <div className="py-1">
                         <Menu.Item>
                           {({ active }) => (
@@ -111,7 +111,7 @@ const ExpenseDetails = ({ expense, onClose }: Props) => {
                               disabled={isLoading}
                               className={`${
                                 active
-                                  ? 'bg-red-100 dark:bg-red-600 text-red-700 dark:text-red-50'
+                                  ? 'bg-red-100 text-red-700 dark:bg-red-600 dark:text-red-50'
                                   : 'text-red-600 dark:text-red-300'
                               } group flex w-full items-center px-4 py-2 text-sm`}
                             >

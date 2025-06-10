@@ -32,28 +32,20 @@ export const useInvoices = () => {
     try {
       const response = await fetch(
         `/api/accounting/invoices/add?jwt=${session?.jwt}&serviceId=${serviceId}`,
-        {
-          method: 'POST',
-          body: JSON.stringify(invoice)
-        }
+        { method: 'POST', body: JSON.stringify(invoice) }
       )
       const responseData = await response.json()
-
       if (!response.ok) {
-        return {
-          error: responseData || {
-            message: 'Failed to add invoice',
-            detail: { message: response.statusText || 'Server error' }
-          }
-        }
+        return { error: { ...responseData, statusCode: response.status } }
       }
       return responseData
     } catch (err: any) {
       console.error('Network or other error in addInvoice:', err)
       return {
         error: {
-          message: 'Network error while adding invoice',
-          detail: { message: err.message || 'Could not connect to server' }
+          message: 'Network error',
+          detail: { message: err.message || 'Could not connect to server' },
+          statusCode: 500
         }
       }
     }
@@ -63,27 +55,20 @@ export const useInvoices = () => {
     try {
       const response = await fetch(
         `/api/accounting/invoices/delete?jwt=${session?.jwt}&serviceId=${serviceId}`,
-        {
-          method: 'POST',
-          body: JSON.stringify({ id })
-        }
+        { method: 'POST', body: JSON.stringify({ id }) }
       )
       const responseData = await response.json().catch(() => ({}))
       if (!response.ok) {
-        return {
-          error: responseData || {
-            message: 'Failed to delete invoice',
-            detail: { message: response.statusText || 'Server error' }
-          }
-        }
+        return { error: { ...responseData, statusCode: response.status } }
       }
       return { success: true, data: responseData }
     } catch (err: any) {
       console.error('Network or other error in removeInvoice:', err)
       return {
         error: {
-          message: 'Network error while deleting invoice',
-          detail: { message: err.message || 'Could not connect to server' }
+          message: 'Network error',
+          detail: { message: err.message || 'Could not connect to server' },
+          statusCode: 500
         }
       }
     }
@@ -120,12 +105,17 @@ export const useInvoices = () => {
   }
 
   const apiSpecificError = data?.getInvoicesResponse?.error
+  const apiError = apiSpecificError || swrError
+  if (swrError) {
+    // The fetcher used by SWR may already structure the error, but we ensure statusCode is present
+    swrError.statusCode = swrError.status || 500
+  }
   const isLoadingState = !swrError && !data && !!getInvoicesUrl
 
   return {
     invoices: data?.getInvoicesResponse?.data as Invoice[] | undefined,
     isLoading: isLoadingState,
-    error: apiSpecificError || swrError,
+    error: apiError, // This error object will now reliably contain a statusCode
     hasNextPage: !!data?.getInvoicesResponse?.meta?.cursors?.next,
     currentPage: data?.getInvoicesResponse?.meta?.cursors?.current,
     hasPrevPage: !!data?.getInvoicesResponse?.meta?.cursors?.previous,

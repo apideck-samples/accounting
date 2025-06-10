@@ -6,6 +6,7 @@ import {
   HiOutlineBookOpen,
   HiOutlineCash,
   HiOutlineDocumentSearch,
+  HiOutlineDocumentText,
   HiOutlineExternalLink,
   HiOutlinePresentationChartBar,
   HiOutlineUserGroup,
@@ -76,6 +77,16 @@ const SidebarLayout = ({ children }: Props) => {
       name: 'Suppliers',
       href: `/suppliers`,
       icon: HiOutlineUserGroup
+    },
+    {
+      name: 'Purchase Orders',
+      href: `/purchase-orders`,
+      icon: HiOutlineDocumentSearch
+    },
+    {
+      name: 'Credit Notes',
+      href: '/credit-notes',
+      icon: HiOutlineDocumentText
     },
     {
       name: 'Documentation',

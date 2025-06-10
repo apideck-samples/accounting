@@ -20,14 +20,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const apideck = init(jwt as string)
-    const response = await apideck.accounting.customers.list({
-      limit: 50,
-      serviceId: serviceId,
-      cursor: cursor
+    const response = await apideck.accounting.creditNotes.list({
+      serviceId,
+      cursor
     })
-    console.log('[Customers API - Raw SDK List Response]:', JSON.stringify(response, null, 2))
     res.json(response)
   } catch (error: unknown) {
-    handleApiError(res, error, 'Failed to fetch customers')
+    handleApiError(res, error, 'Failed to fetch credit notes')
   }
 }

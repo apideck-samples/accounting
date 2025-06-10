@@ -20,13 +20,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const apideck = init(jwt as string)
-    // Based on the docs, the list operation might take filter, sort, passThrough, fields options.
-    // For a basic list, we'll use limit and cursor similar to other resources.
     const response = await apideck.accounting.suppliers.list({
-      limit: 20, // Default limit in docs is 20
-      serviceId: serviceId,
-      cursor: cursor
-      // TODO: Add options for filter, sort, passThrough, fields in the future if needed
+      serviceId,
+      cursor
     })
     console.log('[Suppliers API - Raw SDK List Response]:', JSON.stringify(response, null, 2))
     res.json(response)

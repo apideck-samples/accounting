@@ -3,13 +3,13 @@ import { init } from '../../_utils'
 import { handleApiError } from '../../_utils/apiErrorUtils'
 
 interface Params {
-  serviceId?: string
-  cursor?: string
   jwt?: string
+  serviceId?: string
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { jwt, serviceId, cursor }: Params = req.query
+  const { id } = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
+  const { jwt, serviceId }: Params = req.query
 
   if (!jwt) {
     return res.status(400).json({ message: 'JWT is required' })
@@ -17,17 +17,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!serviceId) {
     return res.status(400).json({ message: 'Service ID is required' })
   }
+  if (!id) {
+    return res.status(400).json({ message: 'Credit Note ID is required in the request body' })
+  }
 
   try {
     const apideck = init(jwt as string)
-    const response = await apideck.accounting.customers.list({
-      limit: 50,
-      serviceId: serviceId,
-      cursor: cursor
-    })
-    console.log('[Customers API - Raw SDK List Response]:', JSON.stringify(response, null, 2))
-    res.json(response)
+    const result = await apideck.accounting.creditNotes.delete({ serviceId, id })
+    res.status(200).json(result)
   } catch (error: unknown) {
-    handleApiError(res, error, 'Failed to fetch customers')
+    handleApiError(res, error, 'Failed to delete credit note')
   }
 }

@@ -150,29 +150,44 @@ const InvoicesTable = () => {
         </table>
 
         {/* Empty State */}
-        {invoices && invoices.length === 0 && !isLoading && (
+        {!isLoading && invoices && invoices.length === 0 && !error && (
           <div
-            className="text-center bg-white py-10 px-6 rounded fade-in"
+            className="text-center bg-white dark:bg-gray-900 py-10 px-6 rounded fade-in"
             data-testid="empty-state"
           >
             <HiOutlineDocumentSearch className="mx-auto h-10 w-10 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No invoices</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No invoices</h3>
           </div>
         )}
 
-        {error && (
+        {/* Error State - This will now catch the Payment Required error */}
+        {error && !isLoading && (
           <div
-            className="text-center bg-white py-10 px-6 rounded fade-in"
-            data-testid="empty-state"
+            className="text-center bg-white dark:bg-gray-900 py-10 px-6 rounded fade-in"
+            data-testid="error-state"
           >
-            <HiExclamation className="mx-auto h-10 w-10 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              {(error as any)?.message || JSON.stringify(error)}
+            <HiExclamation className="mx-auto h-10 w-10 text-red-500" />
+            <h3 className="mt-2 text-sm font-medium text-red-800 dark:text-red-300">
+              {/* The `error` from the hook can be complex, so we parse it for the UI */}
+              {(error as any)?.message || 'An error occurred'}
             </h3>
-            {(error as any)?.message === 'Unauthorized' && (
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              {/* Attempt to show a more detailed message */}
+              {(error as any)?.detail?.message || JSON.stringify((error as any)?.detail) || ''}
+            </p>
+            {/* Specific action for Unauthorized or Payment Required errors */}
+            {((error as any)?.message?.includes('Unauthorized') ||
+              (error as any)?.statusCode === 401 ||
+              (error as any)?.statusCode === 402) && (
               <>
-                <p className="mt-1 mb-3">Please first connect with at least one service</p>
-                <Button text="Authorize integration" onClick={() => setVaultOpen(true)} />
+                <p className="mt-2 mb-3 text-sm text-gray-500 dark:text-gray-400">
+                  There might be an issue with the connection's authorization or your subscription.
+                </p>
+                <Button
+                  text="Re-authorize connection"
+                  onClick={() => setVaultOpen(true)}
+                  variant="primary"
+                />
               </>
             )}
           </div>

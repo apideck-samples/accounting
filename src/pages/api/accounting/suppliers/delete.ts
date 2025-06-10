@@ -24,9 +24,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const apideck = init(jwt as string)
     const result = await apideck.accounting.suppliers.delete({ serviceId, id })
-    // A successful DELETE usually returns a 200 OK with the GetSupplierResponse or similar,
-    // or a 204 No Content if the resource is deleted and nothing is returned.
-    // The Apideck SDK handles this and the result object would reflect it.
     res.status(200).json(result)
   } catch (error: unknown) {
     handleApiError(res, error, 'Failed to delete supplier')

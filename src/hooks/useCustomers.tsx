@@ -21,7 +21,7 @@ export const useCustomers = () => {
     ? `/api/accounting/customers/all?jwt=${session?.jwt}&serviceId=${serviceId}${cursorParams}`
     : null
 
-  const { data, error: swrError } = useSWR(getCustomersUrl, fetcher)
+  const { data: swrData, error: swrError } = useSWR(getCustomersUrl, fetcher)
 
   useEffect(() => {
     if (prevServiceId && prevServiceId !== serviceId) {
@@ -29,74 +29,99 @@ export const useCustomers = () => {
     }
   }, [serviceId, prevServiceId])
 
-  const addCustomer = async (customerPayload: CustomerInput): Promise<Customer | any> => {
-    const response = await fetch(
-      `/api/accounting/customers/add?jwt=${session?.jwt}&serviceId=${serviceId}`,
-      {
-        method: 'POST',
-        body: JSON.stringify(customerPayload)
+  const addCustomer = async (customerPayload: CustomerInput) => {
+    try {
+      const response = await fetch(
+        `/api/accounting/customers/add?jwt=${session?.jwt}&serviceId=${serviceId}`,
+        { method: 'POST', body: JSON.stringify(customerPayload) }
+      )
+      const responseData = await response.json()
+      if (!response.ok) {
+        return { error: { ...responseData, statusCode: response.status } }
       }
-    )
-    const result = await response.json()
-    if (!response.ok) {
-      throw new Error(result.message || 'Failed to add customer')
+      return responseData
+    } catch (err: any) {
+      return {
+        error: {
+          message: 'Network error',
+          detail: { message: err.message || 'Could not connect to server' },
+          statusCode: 500
+        }
+      }
     }
-    return result
   }
 
-  const removeCustomer = async (id: string): Promise<any> => {
-    const response = await fetch(
-      `/api/accounting/customers/delete?jwt=${session?.jwt}&serviceId=${serviceId}`,
-      {
-        method: 'POST',
-        body: JSON.stringify({ id })
+  const removeCustomer = async (id: string) => {
+    try {
+      const response = await fetch(
+        `/api/accounting/customers/delete?jwt=${session?.jwt}&serviceId=${serviceId}`,
+        { method: 'POST', body: JSON.stringify({ id }) }
+      )
+      const responseData = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        return { error: { ...responseData, statusCode: response.status } }
       }
-    )
-    const result = await response.json()
-    if (!response.ok) {
-      throw new Error(result.message || 'Failed to delete customer')
+      return { success: true, data: responseData }
+    } catch (err: any) {
+      return {
+        error: {
+          message: 'Network error while deleting customer',
+          detail: { message: err.message || 'Could not connect to server' },
+          statusCode: 500
+        }
+      }
     }
-    return result
   }
 
-  const createCustomer = async (customerPayload: CustomerInput): Promise<Customer | any> => {
-    const response = await addCustomer(customerPayload)
-    if (response?.id) {
+  const createCustomer = async (customerPayload: CustomerInput) => {
+    const responseData = await addCustomer(customerPayload)
+    if (responseData && !responseData.error) {
       mutate(getCustomersUrl)
     }
-    return response
+    return responseData
   }
 
-  const deleteCustomer = async (id: string): Promise<any> => {
-    await removeCustomer(id)
-    mutate(getCustomersUrl)
+  const deleteCustomer = async (id: string) => {
+    const responseData = await removeCustomer(id)
+    if (responseData && responseData.success) {
+      mutate(getCustomersUrl)
+    }
+    return responseData
   }
+
+  // Robustly access nested data from SDK responses
+  const responseData = swrData?.getCustomersResponse || swrData
+  const customers = responseData?.data as Customer[] | undefined
+  const meta = responseData?.meta
 
   const nextPage = () => {
-    const nextCursor = data?.meta?.cursors?.next
+    const nextCursor = meta?.cursors?.next
     if (nextCursor) {
       setCursor(nextCursor)
     }
   }
 
   const prevPage = () => {
-    const prevCursor = data?.meta?.cursors?.previous
+    const prevCursor = meta?.cursors?.previous
     if (prevCursor) {
       setCursor(prevCursor)
     }
   }
 
-  const isLoading = !swrError && !data && !!getCustomersUrl
-  const apiErrorMessage =
-    data && (data as any).message && (data as any).error ? (data as any).message : undefined
+  const apiError = swrData?.error || swrError
+  if (swrError) {
+    swrError.statusCode = swrError.status || 500
+  }
+
+  const isLoading = !swrError && !swrData && !!getCustomersUrl
 
   return {
-    customers: data?.data as Customer[] | undefined,
-    isLoading: isLoading,
-    isError: swrError || apiErrorMessage || data?.error,
-    hasNextPage: !!data?.meta?.cursors?.next,
-    hasPrevPage: !!data?.meta?.cursors?.previous,
-    currentPage: data?.meta?.cursors?.current,
+    customers,
+    isLoading,
+    error: apiError,
+    hasNextPage: !!meta?.cursors?.next,
+    hasPrevPage: !!meta?.cursors?.previous,
+    currentPage: meta?.cursors?.current,
     nextPage,
     prevPage,
     createCustomer,

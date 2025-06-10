@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { init } from '../../_utils'
+import { handleApiError } from '../../_utils/apiErrorUtils'
 
 interface Params {
   serviceId?: string
@@ -24,11 +25,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       serviceId: serviceId,
       cursor: cursor
     })
+    console.log('[Invoices API - Raw SDK List Response]:', JSON.stringify(response, null, 2))
     res.json(response)
   } catch (error: unknown) {
-    console.error('[API Invoices All] Error:', error)
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
-    const errorStatus = (error as any)?.statusCode || 500
-    return res.status(errorStatus).json({ message: errorMessage, error: error })
+    handleApiError(res, error, 'Failed to fetch invoices')
   }
 }
