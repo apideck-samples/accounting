@@ -3,23 +3,19 @@ import {
   Currency,
   Customer,
   Expense,
+  LedgerAccount,
   LinkedCustomer,
   LinkedSupplier
 } from '@apideck/unify/models/components'
 import FormErrors from 'components/FormErrors'
-import { useCustomers, useExpenses } from 'hooks'
+import { useCustomers, useExpenses, useLedgerAccounts, useSuppliers } from 'hooks'
 import { FormEvent, useMemo, useState } from 'react'
 import {
   parseApiResponseError,
   FormValidationIssue as ParsedFormValidationIssue
 } from 'utils/errorUtils'
 
-interface CustomerDropdownOption {
-  value: string
-  label: string
-}
-
-interface SupplierDropdownOption {
+interface DropdownOption {
   value: string
   label: string
 }
@@ -27,8 +23,13 @@ interface SupplierDropdownOption {
 const CreateExpenseForm = ({ closeForm }: { closeForm: any }) => {
   const { createExpense } = useExpenses()
   const { customers } = useCustomers()
+  const { suppliers, isLoading: isLoadingSuppliers } = useSuppliers()
+  const { ledgerAccounts, isLoading: isLoadingLedgerAccounts } = useLedgerAccounts()
   const [customer, setCustomer] = useState<LinkedCustomer | null>(null)
-  const [supplier, setSupplier] = useState<LinkedSupplier | null>(null)
+  const [selectedSupplier, setSelectedSupplier] = useState<LinkedSupplier | null>(null)
+  const [selectedLedgerAccountId, setSelectedLedgerAccountId] = useState<string | undefined>(
+    undefined
+  )
   const [expenseNumber, setExpenseNumber] = useState<string>()
   const [memo, setMemo] = useState<string>()
   const [transactionDate, setTransactionDate] = useState<Date>()
@@ -40,14 +41,18 @@ const CreateExpenseForm = ({ closeForm }: { closeForm: any }) => {
     ParsedFormValidationIssue[] | null
   >(null)
 
-  const onCustomerSelect = (option: CustomerDropdownOption) => {
+  const onCustomerSelect = (option: DropdownOption) => {
     setCustomer({ id: option.value, displayName: option.label })
-    setSupplier(null)
+    setSelectedSupplier(null)
   }
 
-  const onSupplierSelect = (option: SupplierDropdownOption) => {
-    setSupplier({ id: option.value, displayName: option.label })
+  const onSupplierSelect = (option: DropdownOption) => {
+    setSelectedSupplier({ id: option.value, displayName: option.label })
     setCustomer(null)
+  }
+
+  const onLedgerAccountSelect = (option: DropdownOption) => {
+    setSelectedLedgerAccountId(option.value)
   }
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -60,8 +65,8 @@ const CreateExpenseForm = ({ closeForm }: { closeForm: any }) => {
       memo: memo,
       transactionDate: transactionDate || null,
       customerId: customer?.id,
-      supplierId: supplier?.id,
-      accountId: '123456',
+      supplierId: selectedSupplier?.id,
+      accountId: selectedLedgerAccountId,
       totalAmount: totalAmount,
       paymentType: paymentType,
       type: 'expense' as const,
@@ -71,8 +76,7 @@ const CreateExpenseForm = ({ closeForm }: { closeForm: any }) => {
           ? [
               {
                 totalAmount: totalAmount,
-                description: memo || 'Expense item',
-                accountId: '123456'
+                description: memo || 'Expense item'
               }
             ]
           : []
@@ -110,7 +114,7 @@ const CreateExpenseForm = ({ closeForm }: { closeForm: any }) => {
     }
   }
 
-  const customerOptions: CustomerDropdownOption[] = useMemo(
+  const customerOptions: DropdownOption[] = useMemo(
     () =>
       customers
         ?.map((cust: Customer) => {
@@ -121,21 +125,45 @@ const CreateExpenseForm = ({ closeForm }: { closeForm: any }) => {
               cust.displayName ||
               (cust.firstName && cust.lastName
                 ? `${cust.firstName} ${cust.lastName}`
-                : cust.companyName || 'Unnamed Customer')
+                : cust.companyName || cust.id || 'Unnamed Customer')
           }
         })
         .filter(
-          (opt: { value: string; label: string } | null): opt is CustomerDropdownOption =>
+          (opt): opt is DropdownOption =>
             opt !== null && typeof opt.value === 'string' && typeof opt.label === 'string'
         ) || [],
     [customers]
   )
 
-  const supplierOptions: SupplierDropdownOption[] = [
-    { value: 'supplier1', label: 'Office Supplies Inc.' },
-    { value: 'supplier2', label: 'Tech Solutions Ltd.' },
-    { value: 'supplier3', label: 'Catering Services Co.' }
-  ]
+  const supplierOptions: DropdownOption[] = useMemo(() => {
+    if (isLoadingSuppliers || !suppliers) return []
+    return suppliers
+      .map((supp) => {
+        if (!supp.id) return null
+        return {
+          value: supp.id,
+          label: supp.displayName || supp.companyName || supp.id || 'Unnamed Supplier'
+        }
+      })
+      .filter(
+        (opt): opt is DropdownOption =>
+          opt !== null && typeof opt.value === 'string' && typeof opt.label === 'string'
+      )
+  }, [suppliers, isLoadingSuppliers])
+
+  const ledgerAccountOptions: DropdownOption[] = useMemo(() => {
+    if (isLoadingLedgerAccounts || !ledgerAccounts) return []
+
+    return ledgerAccounts
+      .filter((acc) => acc.status === 'active' && acc.id && acc.name)
+      .map((acc: LedgerAccount) => ({
+        value: acc.id || '123456',
+        label: `${acc.name} (${
+          acc.nominalCode || acc.displayId || acc.id?.substring(0, 6) + '...'
+        }) - ${acc.subType || acc.type}`
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label))
+  }, [ledgerAccounts, isLoadingLedgerAccounts])
 
   const paymentTypeOptions = [
     { value: 'cash', label: 'Cash' },
@@ -164,6 +192,56 @@ const CreateExpenseForm = ({ closeForm }: { closeForm: any }) => {
         <FormErrors issues={formValidationIssues} />
         {/* Divider container */}
         <div className="space-y-6 py-6 sm:space-y-0 sm:divide-y sm:divide-gray-200 sm:py-0">
+          {/* Ledger Account */}
+          <div className="space-y-2 px-4 sm:grid sm:grid-cols-3 sm:items-center sm:gap-4 sm:space-y-0 sm:px-6 sm:py-5">
+            <div>
+              <h3 className="text-sm font-medium text-gray-900">Expense Account</h3>
+            </div>
+            <div className="sm:col-span-2">
+              <div className="space-y-1">
+                <label
+                  htmlFor="ledgerAccount-dropdown"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Expense Account (Paid From/To)
+                </label>
+                <Dropdown
+                  buttonLabel={
+                    isLoadingLedgerAccounts
+                      ? 'Loading Accounts...'
+                      : ledgerAccountOptions.find((opt) => opt.value === selectedLedgerAccountId)
+                          ?.label || 'Select Expense Account'
+                  }
+                  options={ledgerAccountOptions}
+                  onSelect={
+                    !isLoadingLedgerAccounts
+                      ? (onLedgerAccountSelect as (option: any) => void)
+                      : undefined
+                  }
+                  onClear={
+                    !isLoadingLedgerAccounts
+                      ? () => setSelectedLedgerAccountId(undefined)
+                      : undefined
+                  }
+                  isSearchable={!isLoadingLedgerAccounts}
+                  isScrollable={true}
+                  minWidth={224}
+                  align="left"
+                  buttonClassName="w-full text-left !text-gray-700 dark:!text-gray-300 !font-normal"
+                  className="!z-50"
+                />
+                {getFieldError('expense.accountId') && (
+                  <p className="mt-1 text-xs text-red-600">{getFieldError('expense.accountId')}</p>
+                )}
+                {getFieldError('expense.BankAccount.AccountID') && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {getFieldError('expense.BankAccount.AccountID')}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Customer */}
           <div className="space-y-2 px-4 sm:grid sm:grid-cols-3 sm:items-center sm:gap-4 sm:space-y-0 sm:px-6 sm:py-5">
             <div>
@@ -174,7 +252,7 @@ const CreateExpenseForm = ({ closeForm }: { closeForm: any }) => {
                 buttonLabel={customer?.displayName || 'Select Customer'}
                 key={'customer'}
                 align={'left'}
-                className="!z-30 text-left"
+                className="!z-40 text-left"
                 buttonClassName="whitespace-nowrap !text-gray-700 !font-normal"
                 onSelect={onCustomerSelect as (option: any) => void}
                 isScrollable={true}
@@ -196,17 +274,21 @@ const CreateExpenseForm = ({ closeForm }: { closeForm: any }) => {
             </div>
             <div className="sm:col-span-2">
               <Dropdown
-                buttonLabel={supplier?.displayName || 'Select Supplier'}
-                key={'supplier'}
-                align={'left'}
-                className="!z-20 text-left"
-                buttonClassName="whitespace-nowrap !text-gray-700 !font-normal"
-                onSelect={onSupplierSelect as (option: any) => void}
-                isScrollable={true}
-                isSearchable={true}
-                onClear={() => setSupplier(null)}
-                minWidth={224}
+                buttonLabel={
+                  selectedSupplier?.displayName ||
+                  (isLoadingSuppliers ? 'Loading Suppliers...' : 'Select Supplier')
+                }
                 options={supplierOptions}
+                onSelect={
+                  !isLoadingSuppliers ? (onSupplierSelect as (option: any) => void) : undefined
+                }
+                onClear={!isLoadingSuppliers ? () => setSelectedSupplier(null) : undefined}
+                isSearchable={!isLoadingSuppliers}
+                isScrollable={true}
+                minWidth={224}
+                align="left"
+                buttonClassName="w-full text-left !text-gray-700 dark:!text-gray-300 !font-normal"
+                className="!z-30"
               />
               {getFieldError('expense.supplierId') && (
                 <p className="mt-1 text-xs text-red-600">{getFieldError('expense.supplierId')}</p>
@@ -363,7 +445,10 @@ const CreateExpenseForm = ({ closeForm }: { closeForm: any }) => {
           <Button type="button" variant="outline" onClick={closeForm}>
             Cancel
           </Button>
-          <Button type="submit" isLoading={isLoading}>
+          <Button
+            type="submit"
+            isLoading={isLoading || isLoadingSuppliers || isLoadingLedgerAccounts}
+          >
             Create
           </Button>
         </div>

@@ -2,28 +2,9 @@ import { useConnections, useSession } from 'hooks'
 import { useEffect, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 
-import { usePrevious, useToast } from '@apideck/components'
+import { usePrevious } from '@apideck/components'
 import { Expense } from '@apideck/unify/models/components'
 import { fetcher } from 'utils'
-
-interface ApiErrorDetail {
-  name?: string
-  message?: string
-  issues?: Array<{
-    path: string[]
-    message: string
-    code?: string
-    expected?: string
-    received?: string
-  }>
-  cause?: any
-  [key: string]: any // Allow other properties
-}
-
-interface ApiErrorResponse {
-  message: string
-  detail?: ApiErrorDetail
-}
 
 export const useExpenses = () => {
   const [cursor, setCursor] = useState<string | null | undefined>(null)
@@ -32,7 +13,6 @@ export const useExpenses = () => {
   const serviceId = connection?.serviceId || ''
   const prevServiceId = usePrevious(serviceId)
   const { mutate } = useSWRConfig()
-  const { addToast } = useToast()
 
   const hasNewCursor = cursor && (!prevServiceId || prevServiceId === serviceId)
   const cursorParams = hasNewCursor ? `&cursor=${cursor}` : ''
@@ -48,40 +28,6 @@ export const useExpenses = () => {
     }
   }, [serviceId, prevServiceId])
 
-  const parseErrorForToast = (errorData: ApiErrorResponse | any, defaultTitle: string) => {
-    let title = defaultTitle
-    let description = 'An unexpected error occurred. Please try again.'
-
-    if (errorData?.message) {
-      title = errorData.message
-    }
-
-    if (errorData?.detail) {
-      if (errorData.detail.name === 'SDKValidationError' && errorData.detail.issues?.length) {
-        description = errorData.detail.issues
-          .map(
-            (issue: { path: string[]; message: string }) =>
-              `${issue.path.join('.')}: ${issue.message}`
-          )
-          .join('\n')
-      } else if (typeof errorData.detail === 'object' && errorData.detail.message) {
-        description = errorData.detail.message
-      } else if (typeof errorData.detail === 'string') {
-        description = errorData.detail
-      }
-    }
-    // If the description is still the generic one and title is also generic, use SWR error message if available
-    if (
-      title === defaultTitle &&
-      description === 'An unexpected error occurred. Please try again.' &&
-      swrError?.message
-    ) {
-      description = swrError.message
-    }
-
-    return { title, description }
-  }
-
   const addExpense = async (expense: Omit<Expense, 'id'>) => {
     try {
       const response = await fetch(
@@ -94,7 +40,6 @@ export const useExpenses = () => {
       const responseData = await response.json()
 
       if (!response.ok) {
-        console.log('responseData', responseData)
         return {
           error: responseData || {
             message: 'Failed to create expense',
@@ -123,19 +68,25 @@ export const useExpenses = () => {
           body: JSON.stringify({ id })
         }
       )
+      const responseData = await response.json().catch(() => ({}))
+
       if (!response.ok) {
-        const errorData: ApiErrorResponse = await response.json().catch(() => ({}))
-        const { title, description } = parseErrorForToast(errorData, 'Failed to delete expense')
-        addToast({ title, description, type: 'error' })
-        return null
+        return {
+          error: responseData || {
+            message: 'Failed to delete expense',
+            detail: { message: response.statusText || 'Server error' }
+          }
+        }
       }
-      addToast({ title: 'Expense deleted successfully', type: 'success' })
-      return response.json()
-    } catch (err) {
+      return { success: true, data: responseData }
+    } catch (err: any) {
       console.error('Network or other error in removeExpense:', err)
-      const { title, description } = parseErrorForToast(err, 'Failed to delete expense')
-      addToast({ title, description, type: 'error' })
-      return null
+      return {
+        error: {
+          message: 'Network error while deleting expense',
+          detail: { message: err.message || 'Could not connect to server' }
+        }
+      }
     }
   }
 
@@ -149,11 +100,10 @@ export const useExpenses = () => {
 
   const deleteExpense = async (id: string) => {
     const responseData = await removeExpense(id)
-    if (responseData) {
+    if (responseData && responseData.success) {
       mutate(getExpensesUrl)
-      return responseData
     }
-    return null
+    return responseData
   }
 
   const nextPage = () => {
@@ -174,7 +124,7 @@ export const useExpenses = () => {
   return {
     expenses: data?.getExpensesResponse?.data as Expense[] | undefined,
     isLoading: isLoadingState,
-    error: apiError || swrError, // Combine SWR error with API specific error if any
+    error: apiError || swrError,
     hasNextPage: !!data?.getExpensesResponse?.meta?.cursors?.next,
     currentPage: data?.getExpensesResponse?.meta?.cursors?.current,
     hasPrevPage: !!data?.getExpensesResponse?.meta?.cursors?.previous,

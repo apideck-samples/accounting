@@ -20,7 +20,7 @@ export const useInvoices = () => {
     ? `/api/accounting/invoices/all?jwt=${session?.jwt}&serviceId=${serviceId}${cursorParams}`
     : null
 
-  const { data, error } = useSWR(getInvoicesUrl, fetcher)
+  const { data, error: swrError } = useSWR(getInvoicesUrl, fetcher)
 
   useEffect(() => {
     if (prevServiceId && prevServiceId !== serviceId) {
@@ -28,48 +28,81 @@ export const useInvoices = () => {
     }
   }, [serviceId, prevServiceId])
 
-  const addInvoice = async (invoice: Invoice) => {
-    const response = await fetch(
-      `/api/accounting/invoices/add?jwt=${session?.jwt}&serviceId=${serviceId}`,
-      {
-        method: 'POST',
-        body: JSON.stringify(invoice)
+  const addInvoice = async (invoice: Omit<Invoice, 'id'>) => {
+    try {
+      const response = await fetch(
+        `/api/accounting/invoices/add?jwt=${session?.jwt}&serviceId=${serviceId}`,
+        {
+          method: 'POST',
+          body: JSON.stringify(invoice)
+        }
+      )
+      const responseData = await response.json()
+
+      if (!response.ok) {
+        return {
+          error: responseData || {
+            message: 'Failed to add invoice',
+            detail: { message: response.statusText || 'Server error' }
+          }
+        }
       }
-    )
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.message || `Failed to add invoice: ${response.statusText}`)
+      return responseData
+    } catch (err: any) {
+      console.error('Network or other error in addInvoice:', err)
+      return {
+        error: {
+          message: 'Network error while adding invoice',
+          detail: { message: err.message || 'Could not connect to server' }
+        }
+      }
     }
-    return response.json()
   }
 
   const removeInvoice = async (id: string) => {
-    const response = await fetch(
-      `/api/accounting/invoices/delete?jwt=${session?.jwt}&serviceId=${serviceId}`,
-      {
-        method: 'POST',
-        body: JSON.stringify({ id })
+    try {
+      const response = await fetch(
+        `/api/accounting/invoices/delete?jwt=${session?.jwt}&serviceId=${serviceId}`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ id })
+        }
+      )
+      const responseData = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        return {
+          error: responseData || {
+            message: 'Failed to delete invoice',
+            detail: { message: response.statusText || 'Server error' }
+          }
+        }
       }
-    )
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.message || `Failed to delete invoice: ${response.statusText}`)
+      return { success: true, data: responseData }
+    } catch (err: any) {
+      console.error('Network or other error in removeInvoice:', err)
+      return {
+        error: {
+          message: 'Network error while deleting invoice',
+          detail: { message: err.message || 'Could not connect to server' }
+        }
+      }
     }
-    return response.json()
   }
 
-  const createInvoice = async (invoice: Invoice) => {
-    const response = await addInvoice(invoice)
-    if (response) {
+  const createInvoice = async (invoice: Omit<Invoice, 'id'>) => {
+    const responseData = await addInvoice(invoice)
+    if (responseData && !responseData.error && responseData.createInvoiceResponse?.data?.id) {
       mutate(getInvoicesUrl)
     }
-    return response
+    return responseData
   }
 
   const deleteInvoice = async (id: string) => {
-    const response = await removeInvoice(id)
-    mutate(getInvoicesUrl)
-    return response
+    const responseData = await removeInvoice(id)
+    if (responseData && responseData.success) {
+      mutate(getInvoicesUrl)
+    }
+    return responseData
   }
 
   const nextPage = () => {
@@ -81,16 +114,18 @@ export const useInvoices = () => {
 
   const prevPage = () => {
     const prevCursor = data?.getInvoicesResponse?.meta?.cursors?.previous
-    setCursor(prevCursor)
+    if (prevCursor) {
+      setCursor(prevCursor)
+    }
   }
 
-  const apiError = data?.getInvoicesResponse?.error
-  const isLoadingState = !error && !data && !!getInvoicesUrl
+  const apiSpecificError = data?.getInvoicesResponse?.error
+  const isLoadingState = !swrError && !data && !!getInvoicesUrl
 
   return {
     invoices: data?.getInvoicesResponse?.data as Invoice[] | undefined,
     isLoading: isLoadingState,
-    error: apiError || error,
+    error: apiSpecificError || swrError,
     hasNextPage: !!data?.getInvoicesResponse?.meta?.cursors?.next,
     currentPage: data?.getInvoicesResponse?.meta?.cursors?.current,
     hasPrevPage: !!data?.getInvoicesResponse?.meta?.cursors?.previous,

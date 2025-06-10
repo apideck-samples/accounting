@@ -56,10 +56,6 @@ export const ConnectionsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [setConnectionId, callableConnections, connectionId])
 
-  console.log('error', error)
-  console.log('data', data)
-  console.log('session', session)
-
   if (error && !connections && pathname !== '/invalid-session') {
     console.error('Redirecting to /invalid-session due to SWR error:', error)
     push('/invalid-session')

@@ -68,6 +68,16 @@ const SidebarLayout = ({ children }: Props) => {
       icon: HiOutlineCash
     },
     {
+      name: 'Expenses',
+      href: `/expenses`,
+      icon: HiOutlineCash
+    },
+    {
+      name: 'Suppliers',
+      href: `/suppliers`,
+      icon: HiOutlineUserGroup
+    },
+    {
       name: 'Documentation',
       href: 'https://developers.apideck.com/apis/accounting/reference',
       icon: HiOutlineBookOpen,

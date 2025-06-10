@@ -46,7 +46,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
 
   const clearSession = useCallback(() => {
     setSession(null)
-    setToken(null) // Use null instead of false to properly clear
+    setToken(null)
   }, [setSession, setToken])
 
   useEffect(() => {

@@ -1,11 +1,16 @@
-import { Button, useToast } from '@apideck/components'
+import { useToast } from '@apideck/components'
 import type { Expense, ExpenseLineItem } from '@apideck/unify/models/components'
 import { Menu, Transition } from '@headlessui/react'
 import { Fragment, useState } from 'react'
 
+import FormErrors from 'components/FormErrors'
 import Spinner from 'components/Spinner'
 import { useExpenses } from 'hooks'
-import { HiDotsVertical } from 'react-icons/hi'
+import { HiOutlineDotsVertical, HiOutlineOfficeBuilding, HiOutlineTrash } from 'react-icons/hi'
+import {
+  parseApiResponseError,
+  FormValidationIssue as ParsedFormValidationIssue
+} from 'utils/errorUtils'
 
 interface Props {
   expense: Expense
@@ -17,73 +22,74 @@ const ExpenseDetails = ({ expense, onClose }: Props) => {
   const { deleteExpense } = useExpenses()
   const [isLoading, setIsLoading] = useState(false)
   const { addToast } = useToast()
+  const [deleteErrorIssues, setDeleteErrorIssues] = useState<ParsedFormValidationIssue[] | null>(
+    null
+  )
 
   const onDelete = async (id: string) => {
     setIsLoading(true)
-    try {
-      await deleteExpense(id)
+    setDeleteErrorIssues(null)
+    console.log('[ExpenseDetails] Attempting to delete expense with ID:', id)
+
+    const response = await deleteExpense(id)
+    console.log('[ExpenseDetails] Response from deleteExpense hook:', response)
+    setIsLoading(false)
+
+    if (response && response.success) {
       addToast({
-        title: 'Expense deleted',
+        title: 'Expense Deleted',
+        description: `Expense ${expense.number || id} has been successfully deleted.`,
         type: 'success'
       })
-      setIsLoading(false)
       onClose()
-    } catch (error: any) {
+    } else if (response && response.error) {
+      const { toastTitle, toastDescription, formIssues } = parseApiResponseError(
+        response.error,
+        'Deletion Failed'
+      )
+      addToast({ title: toastTitle, description: toastDescription, type: 'error' })
+      if (formIssues.length > 0) {
+        setDeleteErrorIssues(formIssues)
+      }
+    } else {
       addToast({
-        title: 'Expense failed to delete',
-        description: error?.message || 'An unexpected error occurred',
+        title: 'Deletion Failed',
+        description: 'An unexpected error occurred and the response was not recognized.',
         type: 'error'
       })
-      setIsLoading(false)
     }
   }
 
   return (
-    <div className="divide-y divide-gray-200">
+    <div className="divide-y divide-gray-200 dark:divide-gray-700">
       <div className="pb-6">
-        <div className="h-24 bg-gradient bg-gradient-to-r from-red-600 to-red-500 sm:h-20 lg:h-28" />
-        <div className="lg:-mt-15 -mt-12 flow-root px-4 sm:-mt-8 sm:flex sm:items-end sm:px-6">
+        <div className="h-24 bg-gradient bg-gradient-to-r from-red-600 to-red-500 sm:h-20 lg:h-28 rounded-md" />
+        <div className="lg:-mt-15 -mt-12 flow-root px-4 sm:-mt-8 sm:flex sm:items-end sm:px-6 lg:-mt-20">
           <div>
             <div className="-m-1 flex">
-              <div className="inline-flex overflow-hidden rounded-lg border-4 border-white bg-white">
-                <img
-                  className="h-24 w-24 flex-shrink-0 sm:h-40 sm:w-40 lg:h-48 lg:w-48"
-                  src="https://www.iskibris.com/assets/images/placeholder-company.png"
-                  alt="expense"
-                />
+              <div className="inline-flex overflow-hidden rounded-lg border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-700">
+                <HiOutlineOfficeBuilding className="h-24 w-24 text-gray-500 dark:text-gray-400 p-4 sm:h-32 sm:w-32 lg:h-40 lg:w-40" />
               </div>
             </div>
           </div>
           <div className="mt-6 sm:ml-6 sm:flex-1">
             <div>
               <div className="flex items-center">
-                <h3 className="text-xl font-bold text-gray-900 sm:text-2xl">
-                  Expense {expense.number}
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">
+                  Expense {expense.number || 'N/A'}
                 </h3>
               </div>
-              <p className="text-sm text-gray-500">ID: {expense.id}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">ID: {expense.id}</p>
             </div>
             <div className="mt-5 flex flex-wrap space-y-3 sm:space-y-0 sm:space-x-3">
-              <button
-                type="button"
-                className="inline-flex w-full flex-shrink-0 items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:flex-1"
-              >
-                View details
-              </button>
-              <button
-                type="button"
-                className="inline-flex w-full flex-1 items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-              >
-                Export
-              </button>
-              <div className="ml-3 inline-flex sm:ml-0">
+              <div className="ml-auto inline-flex sm:ml-0">
                 <Menu as="div" className="relative inline-block text-left">
-                  <Menu.Button className="inline-flex items-center rounded-md border border-gray-300 bg-white p-2 text-sm font-medium text-gray-400 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                  <Menu.Button className="inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-2 text-sm font-medium text-gray-400 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                     <span className="sr-only">Open options menu</span>
                     {isLoading ? (
                       <Spinner className="h-5 w-5" />
                     ) : (
-                      <HiDotsVertical className="h-5 w-5" aria-hidden="true" />
+                      <HiOutlineDotsVertical className="h-5 w-5" aria-hidden="true" />
                     )}
                   </Menu.Button>
                   <Transition
@@ -95,18 +101,31 @@ const ExpenseDetails = ({ expense, onClose }: Props) => {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                      <div className="py-4 space-y-2 px-4">
+                    <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-gray-700 shadow-lg ring-1 ring-black dark:ring-gray-600 ring-opacity-5 focus:outline-none">
+                      <div className="py-1">
                         <Menu.Item>
-                          <Button
-                            variant="danger-outline"
-                            type="button"
-                            isLoading={isLoading}
-                            onClick={() => onDelete(expense?.id as string)}
-                            className="text-gray-700 block text-sm w-full"
-                          >
-                            Delete expense
-                          </Button>
+                          {({ active }) => (
+                            <button
+                              type="button"
+                              onClick={() => onDelete(expense.id!)}
+                              disabled={isLoading}
+                              className={`${
+                                active
+                                  ? 'bg-red-100 dark:bg-red-600 text-red-700 dark:text-red-50'
+                                  : 'text-red-600 dark:text-red-300'
+                              } group flex w-full items-center px-4 py-2 text-sm`}
+                            >
+                              {isLoading ? (
+                                <Spinner className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <HiOutlineTrash
+                                  className="mr-3 h-5 w-5 text-red-400 group-hover:text-red-500"
+                                  aria-hidden="true"
+                                />
+                              )}
+                              {isLoading ? 'Deleting...' : 'Delete Expense'}
+                            </button>
+                          )}
                         </Menu.Item>
                       </div>
                     </Menu.Items>
@@ -117,29 +136,34 @@ const ExpenseDetails = ({ expense, onClose }: Props) => {
           </div>
         </div>
       </div>
-      <div className="px-4 py-5 sm:px-0 sm:py-0">
-        <dl className="space-y-8 sm:space-y-0 sm:divide-y sm:divide-gray-200">
+      {deleteErrorIssues && deleteErrorIssues.length > 0 && (
+        <div className="px-4 pt-2 sm:px-6">
+          <FormErrors issues={deleteErrorIssues} title="Could not delete expense:" />
+        </div>
+      )}
+      <div className="px-4 py-5 sm:px-6 sm:py-0">
+        <dl className="space-y-8 sm:space-y-0 sm:divide-y sm:divide-gray-200 dark:divide-gray-700">
           <div className="sm:flex sm:px-6 sm:py-5">
-            <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0 lg:w-48">
+            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-40 sm:flex-shrink-0 lg:w-48">
               Memo
             </dt>
-            <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 sm:ml-6">
-              <p>{expense.memo}</p>
+            <dd className="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0 sm:ml-6">
+              <p>{expense.memo || 'N/A'}</p>
             </dd>
           </div>
           <div className="sm:flex sm:px-6 sm:py-5">
-            <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0 lg:w-48">
+            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-40 sm:flex-shrink-0 lg:w-48">
               Payment Type
             </dt>
-            <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 sm:ml-6 truncate">
+            <dd className="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0 sm:ml-6 truncate">
               <p>{expense.paymentType || 'N/A'}</p>
             </dd>
           </div>
           <div className="sm:flex sm:px-6 sm:py-5">
-            <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0 lg:w-48">
+            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-40 sm:flex-shrink-0 lg:w-48">
               Total Amount
             </dt>
-            <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 sm:ml-6">
+            <dd className="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0 sm:ml-6">
               {expense.totalAmount !== undefined &&
                 expense.totalAmount !== null &&
                 new Intl.NumberFormat(currency, {
@@ -149,10 +173,10 @@ const ExpenseDetails = ({ expense, onClose }: Props) => {
             </dd>
           </div>
           <div className="sm:flex sm:px-6 sm:py-5">
-            <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0 lg:w-48">
+            <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 sm:w-40 sm:flex-shrink-0 lg:w-48">
               Transaction Date
             </dt>
-            <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 sm:ml-6">
+            <dd className="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0 sm:ml-6">
               {expense.transactionDate &&
                 new Date(expense.transactionDate as unknown as string).toLocaleDateString()}
             </dd>
@@ -161,73 +185,82 @@ const ExpenseDetails = ({ expense, onClose }: Props) => {
             <div className="w-full px-4 sm:px-6">
               <div className="sm:flex sm:items-center">
                 <div className="sm:flex-auto">
-                  <h3 className="text-xl font-semibold text-gray-900">Line Items</h3>
-                </div>
-                <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-                  <button
-                    type="button"
-                    className="inline-flex items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:w-auto"
-                  >
-                    Export
-                  </button>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    Line Items
+                  </h3>
                 </div>
               </div>
               <div className="mt-6 flex flex-col w-full">
                 <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6">
                   <div className="inline-block min-w-full py-2 align-middle md:px-6">
-                    <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                      <table className="min-w-full divide-y divide-gray-300">
-                        <thead className="bg-gray-50">
+                    <div className="overflow-hidden shadow ring-1 ring-black dark:ring-gray-700 ring-opacity-5 md:rounded-lg">
+                      <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
+                        <thead className="bg-gray-50 dark:bg-gray-800">
                           <tr>
                             <th
                               scope="col"
-                              className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                              className="whitespace-nowrap py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6"
                             >
                               ID
                             </th>
                             <th
                               scope="col"
-                              className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
+                              className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
                             >
                               Description
                             </th>
                             <th
                               scope="col"
-                              className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
+                              className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
                             >
                               Total Amount
                             </th>
                             <th
                               scope="col"
-                              className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900"
+                              className="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
                             >
                               Billable
                             </th>
                           </tr>
                         </thead>
-                        <tbody className=" bg-white">
+                        <tbody className=" bg-white dark:bg-gray-900">
                           {expense.lineItems?.map((lineItem: ExpenseLineItem) => {
                             return (
-                              <tr key={lineItem.id} className="border-b border-gray-200">
-                                <td className="whitespace-nowrap py-2 pl-4 pr-3 text-sm text-gray-500 sm:pl-6">
-                                  {lineItem?.id}
+                              <tr
+                                key={lineItem.id || Math.random()}
+                                className="border-b border-gray-200 dark:border-gray-700"
+                              >
+                                <td className="whitespace-nowrap py-2 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
+                                  {lineItem?.id || 'N/A'}
                                 </td>
-                                <td className="whitespace-nowrap px-2 py-2 text-sm font-medium text-gray-900 truncate">
-                                  {lineItem?.description}
+                                <td className="whitespace-nowrap px-2 py-2 text-sm font-medium text-gray-900 dark:text-white truncate">
+                                  {lineItem?.description || 'N/A'}
                                 </td>
-                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-700">
-                                  {lineItem?.totalAmount &&
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-700 dark:text-gray-300">
+                                  {lineItem?.totalAmount !== undefined &&
+                                    lineItem?.totalAmount !== null &&
                                     new Intl.NumberFormat(currency, {
                                       style: 'currency',
                                       currency: currency
                                     }).format(lineItem?.totalAmount)}
                                 </td>
-                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-700">
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-700 dark:text-gray-300">
                                   {lineItem?.billable ? 'Yes' : 'No'}
                                 </td>
                               </tr>
                             )
                           })}
+                          {!expense.lineItems ||
+                            (expense.lineItems.length === 0 && (
+                              <tr>
+                                <td
+                                  colSpan={4}
+                                  className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500 dark:text-gray-400"
+                                >
+                                  No line items for this expense.
+                                </td>
+                              </tr>
+                            ))}
                         </tbody>
                       </table>
                     </div>

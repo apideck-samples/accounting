@@ -1,5 +1,5 @@
 import { Button, Chip } from '@apideck/components'
-import { useExpenses, useSession } from 'hooks'
+import { useCustomers, useExpenses, useSession, useSuppliers } from 'hooks'
 import { HiExclamation, HiOutlineDocumentSearch } from 'react-icons/hi'
 
 import type { Expense } from '@apideck/unify/models/components'
@@ -11,6 +11,8 @@ import ExpensesTableLoadingRow from './ExpensesTableLoadingRow'
 
 const ExpensesTable = () => {
   const { expenses, error, isLoading, hasNextPage, hasPrevPage, nextPage, prevPage } = useExpenses()
+  const { customers } = useCustomers()
+  const { suppliers } = useSuppliers()
 
   const [selectedExpense, setSelectedExpense] = useState<null | Expense>(null)
   const [vaultOpen, setVaultOpen] = useState(false)
@@ -79,6 +81,9 @@ const ExpensesTable = () => {
               const createdOrUpdatedAtValue = expense.createdAt || expense.updatedAt
               const transactionDateValue = expense.transactionDate
 
+              const customer = customers?.find((c) => c.id === expense.customerId)
+              const supplier = suppliers?.find((s) => s.id === expense.supplierId)
+
               return (
                 <tr
                   key={expense.id}
@@ -92,7 +97,11 @@ const ExpensesTable = () => {
                   <td className="w-full max-w-0 py-4 pl-4 pr-3 text-sm  text-gray-900 sm:w-auto sm:max-w-none sm:pl-6">
                     <div className="flex-1 truncate hidden sm:block">
                       <h3 className="text-gray-800 text-sm truncate text-left">
-                        {expense.customerId || expense.supplierId || 'N/A'}
+                        {customer?.companyName ||
+                          supplier?.companyName ||
+                          expense.customerId ||
+                          expense.supplierId ||
+                          'N/A'}
                       </h3>
                     </div>
                   </td>

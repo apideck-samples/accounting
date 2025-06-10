@@ -6,6 +6,7 @@ interface Params {
   serviceId?: string
   cursor?: string
   jwt?: string
+  // Add other potential query params like filters if needed in the future
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -20,14 +21,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const apideck = init(jwt as string)
-    const response = await apideck.accounting.expenses.list({
-      limit: 10,
+    const response = await apideck.accounting.ledgerAccounts.list({
+      limit: 200, // Fetch a larger list for selection, default is often 20
       serviceId: serviceId,
       cursor: cursor
+      // filters could be added here, e.g. to fetch only specific account types
     })
-    console.log('[Expenses API - Raw SDK List Response]:', JSON.stringify(response, null, 2))
+    // Add console log for pagination debugging later
+    console.log('[LedgerAccounts API - Raw SDK List Response]:', JSON.stringify(response, null, 2))
     res.json(response)
   } catch (error: unknown) {
-    handleApiError(res, error, 'Failed to fetch expenses')
+    handleApiError(res, error, 'Failed to fetch ledger accounts')
   }
 }
