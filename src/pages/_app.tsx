@@ -1,8 +1,9 @@
 import 'styles/main.css'
 
-import { ConnectionsProvider, SessionProvider } from 'hooks'
 import { ModalProvider, ToastProvider } from '@apideck/components'
+import { ConnectionsProvider, SessionProvider } from 'hooks'
 
+import { ChatWidget } from 'components/ChatWidget'
 import { AppProps } from 'next/app'
 
 export default function App({ Component, pageProps }: AppProps): JSX.Element {
@@ -12,6 +13,7 @@ export default function App({ Component, pageProps }: AppProps): JSX.Element {
         <SessionProvider>
           <ConnectionsProvider>
             <Component {...pageProps} />
+            <ChatWidget />
           </ConnectionsProvider>
         </SessionProvider>
       </ModalProvider>
