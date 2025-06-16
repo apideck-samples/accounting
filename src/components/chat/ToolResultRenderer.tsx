@@ -4,7 +4,10 @@ import { CustomerResults } from './tool-renderers/CustomerResults'
 import { ExpenseResults } from './tool-renderers/ExpenseResults'
 import { GenericResult } from './tool-renderers/GenericResult'
 import { InvoiceResults } from './tool-renderers/InvoiceResults'
+import { PaymentResults } from './tool-renderers/PaymentResults'
+import { ProfitAndLossReport } from './tool-renderers/ProfitAndLossReport'
 import { PurchaseOrderResults } from './tool-renderers/PurchaseOrderResults'
+import { SupplierResults } from './tool-renderers/SupplierResults'
 import { EmptyResult, NoData, ToolError, ToolLoading } from './tool-renderers/ToolStates'
 
 export function ToolResultRenderer({ toolInvocation }: { toolInvocation: any }) {
@@ -39,8 +42,14 @@ export function ToolResultRenderer({ toolInvocation }: { toolInvocation: any }) 
       return <CreditNoteResults result={result} />
     case 'listPurchaseOrders':
       return <PurchaseOrderResults result={result} />
+    case 'listSuppliers':
+      return <SupplierResults result={result} />
+    case 'listPayments':
+      return <PaymentResults result={result} />
     case 'getBalanceSheet':
       return <BalanceSheetReport result={result} />
+    case 'getProfitAndLoss':
+      return <ProfitAndLossReport result={result} />
     default:
       return <GenericResult toolName={toolName} result={result} />
   }

@@ -3,7 +3,7 @@ import 'styles/main.css'
 import { ModalProvider, ToastProvider } from '@apideck/components'
 import { ConnectionsProvider, SessionProvider } from 'hooks'
 
-import { ChatWidget } from 'components/ChatWidget'
+import { ChatWidget } from 'components/chat/ChatWidget'
 import { AppProps } from 'next/app'
 
 export default function App({ Component, pageProps }: AppProps): JSX.Element {
