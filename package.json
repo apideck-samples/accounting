@@ -21,7 +21,7 @@
     "@apideck/node": "^2.2.0",
     "@apideck/react-vault": "^0.2.10",
     "@apideck/unify": "^0.24.0",
-    "@apideck/vault-js": "^1.7.0",
+    "@apideck/vault-js": "^1.8.0",
     "ai": "^4.3.16",
     "camelcase-keys-deep": "^0.1.0",
     "clsx": "^2.1.1",
