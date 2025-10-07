@@ -18,12 +18,16 @@ export const useProfitAndLoss = () => {
   const { connection } = useConnections()
   const { session } = useSession()
 
+  // Default to the full previous month
   const today = new Date()
-  const firstDayDefaultMonthStr = toYYYYMMDD(new Date(today.getFullYear(), 4, 1))
-  const lastDayDefaultMonthStr = toYYYYMMDD(new Date(today.getFullYear(), 5, 0))
+  const firstDayOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+  const lastDayOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0)
 
-  const [startDate, setStartDate] = useState<string | null>(firstDayDefaultMonthStr)
-  const [endDate, setEndDate] = useState<string | null>(lastDayDefaultMonthStr)
+  const defaultStartDate = toYYYYMMDD(firstDayOfLastMonth)
+  const defaultEndDate = toYYYYMMDD(lastDayOfLastMonth)
+
+  const [startDate, setStartDate] = useState<string | null>(defaultStartDate)
+  const [endDate, setEndDate] = useState<string | null>(defaultEndDate)
   const serviceId = connection?.serviceId || ''
 
   const profitAndLossUrl = useMemo(() => {
@@ -62,7 +66,8 @@ export const useProfitAndLoss = () => {
     const reportUrls: string[] = []
     const currentDate = new Date()
 
-    for (let i = 0; i < 7; i++) {
+    // Generate reports for the last 6 months for background chart data
+    for (let i = 0; i < 6; i++) {
       const firstDayOfTargetMonth = new Date(
         currentDate.getFullYear(),
         currentDate.getMonth() - i,
@@ -128,6 +133,7 @@ export const useProfitAndLoss = () => {
       mutate,
       isLoading: isLoadingSingle || isLoadingMonthly,
       isError: singleReportError || multiMonthError || singleReportData?.message,
+      errorMessage: singleReportError?.message || singleReportData?.message || null,
       lastSixMonths: extractedMonthlyReports
     }),
     [

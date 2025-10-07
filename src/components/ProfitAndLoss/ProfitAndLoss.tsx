@@ -114,7 +114,16 @@ const ProfitAndLoss = ({ profitAndLoss, type = 'income' }: Props) => {
         </div>
       )}
     </ChartWrapper>
-  ) : null
+  ) : (
+    <ChartWrapper
+      title={type.charAt(0).toUpperCase() + type.slice(1)}
+      subTitle="Select a date range to view data"
+    >
+      <div className="text-center py-10">
+        <p className="text-gray-500">Please select a start and end date to view {type} data.</p>
+      </div>
+    </ChartWrapper>
+  )
 }
 
 export default ProfitAndLoss

@@ -195,7 +195,7 @@ const CreateInvoiceForm = ({
                   isScrollable={true}
                   minWidth={224}
                   align={'left'}
-                  className="!z-30 text-left"
+                  className="!z-50 text-left"
                   buttonClassName="w-full text-left !text-gray-700 dark:!text-gray-300 !font-normal"
                 />
                 <button

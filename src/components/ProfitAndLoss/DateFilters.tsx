@@ -41,7 +41,6 @@ const DateFilters = ({ startDate, setStartDate, endDate, setEndDate }: DateFilte
           maxDate={endDate ? new Date(endDate) : new Date()} // Max start date is end date or today
           onClear={() => {
             setStartDate(null)
-            // Optionally clear endDate too if startDate is cleared, or let user re-select
           }}
         />
       </div>
