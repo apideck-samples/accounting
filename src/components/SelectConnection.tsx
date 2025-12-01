@@ -3,34 +3,27 @@ import { useConnections, useSession } from 'hooks'
 
 import { Connection } from '@apideck/unify/models/components'
 import { ApideckVault } from '@apideck/vault-js'
-import { useEffect, useState } from 'react'
 import Spinner from './Spinner'
 
 const SelectConnection = () => {
   const { setConnectionId, connection, connections, isLoading, mutate } = useConnections()
   const { token } = useSession()
-  const [serviceId, setServiceId] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (token && serviceId) {
-      ApideckVault.open({
-        token: token,
-        showAttribution: true,
-        serviceId: serviceId,
-        unifiedApi: 'accounting',
-        onClose: () => {
-          setServiceId(null)
-          mutate()
-        }
-      })
-    }
-  }, [token, serviceId, mutate])
 
   const selectConnection = async (connection: Connection) => {
     if (connection.state === 'callable') {
       setConnectionId(connection.id as string)
     } else {
-      setServiceId(connection.serviceId as string)
+      if (token && connection.serviceId) {
+        ApideckVault.open({
+          token: token,
+          showAttribution: true,
+          serviceId: connection.serviceId,
+          unifiedApi: 'accounting',
+          onClose: () => {
+            mutate()
+          }
+        })
+      }
     }
   }
 

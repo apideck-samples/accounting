@@ -10,7 +10,6 @@ import Spinner from './Spinner'
 const SelectConnectionGrid = () => {
   const { setConnectionId, connection, connections, isLoading, mutate } = useConnections()
   const { token } = useSession()
-  const [serviceId, setServiceId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filteredConnections, setFilteredConnections] = useState<Connection[]>([])
 
@@ -26,26 +25,21 @@ const SelectConnectionGrid = () => {
     setFilteredConnections(filtered)
   }, [connections, searchTerm])
 
-  useEffect(() => {
-    if (token && serviceId) {
-      ApideckVault.open({
-        token: token,
-        showAttribution: true,
-        serviceId: serviceId,
-        unifiedApi: 'accounting',
-        onClose: () => {
-          setServiceId(null)
-          mutate()
-        }
-      })
-    }
-  }, [token, serviceId, mutate])
-
   const selectConnection = async (connection: Connection) => {
     if (connection.state === 'callable') {
       setConnectionId(connection.id as string)
     } else {
-      setServiceId(connection.serviceId as string)
+      if (token && connection.serviceId) {
+        ApideckVault.open({
+          token: token,
+          showAttribution: true,
+          serviceId: connection.serviceId,
+          unifiedApi: 'accounting',
+          onClose: () => {
+            mutate()
+          }
+        })
+      }
     }
   }
 
