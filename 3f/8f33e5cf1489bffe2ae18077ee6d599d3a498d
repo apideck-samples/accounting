@@ -1,0 +1,33 @@
+src/pages/_app.tsx
+  s_b71957410a19fc::t_62cb7e61c18f73 6,12-23
+.env.example
+  s_b71957410a19fc::t_79173a532ba249 4-11
+package-lock.json
+  s_b71957410a19fc::t_d7e016d2fb3b48 26,2355-2367,2823-2828,4469-4478,4899-4906,5699-5703,9948-9962,9968-9976,10108-10112,11732-11736
+package.json
+  s_b71957410a19fc::t_a975ebc29e2fae 32
+src/components/analytics/Analytics.tsx
+  s_b71957410a19fc::t_4d925cfcc683d6 1-28
+src/components/analytics/HubspotTracking.tsx
+  s_b71957410a19fc::t_a564419420edf7 1-58
+src/components/analytics/PostHogTracking.tsx
+  s_b71957410a19fc::t_9e51e2a78e2e10 1-427
+tsconfig.tsbuildinfo
+  s_b71957410a19fc::t_e8297326a40e21 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.8",
+  "base_commit_sha": "3f8f33e5cf1489bffe2ae18077ee6d599d3a498d",
+  "prompts": {},
+  "sessions": {
+    "s_b71957410a19fc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "501cc66c-24be-4ee8-9fe2-8222cb4b8c4f",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Gertjan de Wilde <gertjan@apideck.com>"
+    }
+  }
+}
